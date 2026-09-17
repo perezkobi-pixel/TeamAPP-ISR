@@ -820,7 +820,8 @@
       </div>
       <span class="section-label">ענף ספורט</span>
       <div class="sport-grid" id="search-sport-grid">
-        <div class="sport-tile active-tile" onclick="tileSelect(this)"><div class="emo">⚽</div><div class="name">כדורגל</div></div>
+        <div class="sport-tile active-tile" onclick="tileSelect(this)"><div class="emo">🏅</div><div class="name">כל הענפים</div></div>
+        <div class="sport-tile" onclick="tileSelect(this)"><div class="emo">⚽</div><div class="name">כדורגל</div></div>
         <div class="sport-tile" onclick="tileSelect(this)"><div class="emo">🏀</div><div class="name">כדורסל</div></div>
         <div class="sport-tile" onclick="tileSelect(this)"><div class="emo">🏐</div><div class="name">כדורעף</div></div>
         <div class="sport-tile" onclick="tileSelect(this)"><div class="emo">🎾</div><div class="name">פאדל</div></div>
@@ -1023,6 +1024,11 @@
           <div class="card-body">
             <div id="gp-conditions" style="font-size:13px; line-height:1.9;"></div>
           </div>
+        </div>
+
+        <div id="gp-requests-section" style="display:none;">
+          <span class="section-label">בקשות הצטרפות ממתינות</span>
+          <div id="gp-requests-list"></div>
         </div>
 
         <div id="gp-games-section" style="display:none;">
@@ -1668,7 +1674,7 @@
       if(memP) memP.style.display = 'none';
     }
     if(stateReady) renderAll();
-    if(name === 'myGroups') refreshRealMemberGroups();
+    if(name === 'myGroups' || name === 'home' || name === 'calendar') refreshRealMemberGroups();
     if(name === 'home') refreshHomeInvitesAndRequests();
   }
   async function refreshHomeInvitesAndRequests(){
@@ -1742,9 +1748,15 @@
   async function refreshRealMemberGroups(){
     const acc = currentAccount();
     const wrap = document.getElementById('mygroups-real-member-extra');
-    if(!acc || !wrap) return;
+    if(!acc) return;
     const ids = acc.pendingRealRequests || [];
-    if(!ids.length){ wrap.innerHTML = ''; return; }
+    realMemberGamesCache = [];
+    hasAnyRealMembership = false;
+    if(!ids.length){
+      if(wrap) wrap.innerHTML = '';
+      renderAll();
+      return;
+    }
     const results = await Promise.all(ids.map(id => loadGroup(id)));
     let stillPending = [];
     let html = '';
@@ -1754,6 +1766,11 @@
       const isMemberNow = (g.members||[]).some(m=>m.id===acc.id) || g.ownerId === acc.id;
       const stillWaiting = (g.pendingRequests||[]).some(r=>r.requesterId===acc.id);
       if(isMemberNow){
+        hasAnyRealMembership = true;
+        sortedGames(g).forEach(gm => {
+          const dt = new Date(gm.date+'T'+gm.time);
+          if(!isNaN(dt.getTime())) realMemberGamesCache.push({ group:g, game:gm, dt });
+        });
         const emoji = SPORT_EMOJI[g.sport] || '🏅';
         html += '<div class="card" onclick="openRealMemberView(\''+id+'\')">'
           + '<div class="card-banner" style="background:linear-gradient(135deg,#B5501E,#5A2609);">'
@@ -1773,11 +1790,12 @@
       }
       // else: rejected or removed — drop silently, not re-added to stillPending
     });
-    wrap.innerHTML = html;
+    if(wrap) wrap.innerHTML = html;
     if(stillPending.length !== ids.length){
       acc.pendingRealRequests = stillPending;
       saveState();
     }
+    renderAll();
   }
   function openRealMemberView(id){
     loadGroup(id).then(g => {
@@ -2079,7 +2097,11 @@
     document.getElementById('results-map').style.display = mode==='map' ? 'block' : 'none';
   }
   function tileSelect(el){
-    el.parentElement.querySelectorAll('.sport-tile').forEach(t=>{t.style.outline='none'; t.style.boxShadow='0 4px 10px rgba(13,35,23,0.06)';});
+    el.parentElement.querySelectorAll('.sport-tile').forEach(t=>{
+      t.classList.remove('active-tile');
+      t.style.outline='none'; t.style.boxShadow='0 4px 10px rgba(13,35,23,0.06)';
+    });
+    el.classList.add('active-tile');
     el.style.outline='2.5px solid var(--pitch)';
     el.style.boxShadow='0 4px 14px rgba(23,64,43,0.25)';
   }
@@ -2285,7 +2307,8 @@
     go('searchResults');
     const acc = currentAccount();
     const sportTile = document.querySelector('#search-sport-grid .sport-tile.active-tile');
-    const sport = sportTile ? sportTile.querySelector('.name').textContent.trim() : null;
+    let sport = sportTile ? sportTile.querySelector('.name').textContent.trim() : null;
+    if(sport === 'כל הענפים') sport = null;
     const ageChip = document.querySelector('#search-age-chips .chip.active');
     const age = ageChip ? ageChip.textContent.trim() : 'כל הגילאים';
     const levelChip = document.querySelector('#search-level-chips .chip.active');
@@ -2298,7 +2321,12 @@
     try{
       const snap = await fbdb.ref('groups').once('value');
       all = snap.exists() ? snap.val() : {};
-    }catch(e){ all = {}; }
+    }catch(e){
+      console.error('search fetch failed', e);
+      section.style.display = 'block';
+      wrap.innerHTML = '<p style="text-align:center; font-size:12.5px; color:#DC2626; padding:10px 0;">שגיאה בטעינת קבוצות מהשרת — בדקו את הרשאות הקריאה ב-Firebase</p>';
+      return;
+    }
     const matches = Object.values(all).filter(g => {
       if(!g || g.ownerId === (acc && acc.id)) return false; // skip my own groups here
       if(sport && g.sport !== sport) return false;
@@ -2450,7 +2478,7 @@
       }).join('');
     }
     if(mode === 'owner'){
-      list.innerHTML += '<button class="btn btn-primary" style="margin-top:4px; box-shadow:0 6px 16px rgba(255,87,34,0.35); font-size:15px;" onclick="openCreateGameForGroup(\''+g.id+'\')">קביעת משחק חדש</button>';
+      list.innerHTML += '<div style="padding:0 20px;"><button class="btn btn-primary" style="margin-top:4px; box-shadow:0 6px 16px rgba(255,87,34,0.35); font-size:15px;" onclick="openCreateGameForGroup(\''+g.id+'\')">קביעת משחק חדש</button></div>';
     }
   }
   function getCurrentGroupContext(){
@@ -2472,6 +2500,7 @@
     await saveGroup(g);
     const ctx = getCurrentGroupContext();
     if(ctx && ctx.id === groupId) renderGpGamesSection(g, ctx.mode);
+    if((acc.pendingRealRequests||[]).includes(groupId)) refreshRealMemberGroups();
   }
   function toggleMembersPanel(){
     const ctx = getCurrentGroupContext();
@@ -2552,6 +2581,8 @@
     const wrap = document.getElementById('gp-action');
     if(!wrap) return;
     const acc = currentAccount();
+    const reqsSectionDefault = document.getElementById('gp-requests-section');
+    if(reqsSectionDefault) reqsSectionDefault.style.display = 'none';
     if(currentRealGroupId){
       const g = await loadGroup(currentRealGroupId);
       if(!g){ wrap.innerHTML = '<p style="text-align:center; color:var(--ink-soft); font-size:13px;">הקבוצה לא נמצאה</p>'; renderGpGamesSection(null,'none'); return; }
@@ -2573,16 +2604,21 @@
       const g = acc && acc.myGroups.find(x=>x.id===currentOwnedGroupId);
       renderGpGamesSection(g, 'owner');
       const reqs = (g && g.pendingRequests) || [];
-      const reqsHTML = reqs.length
-        ? reqs.map(r =>
-            '<div class="card" style="cursor:default; box-shadow:none; border:1px solid var(--line); margin-bottom:8px;"><div class="card-body" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">'
+      const reqsSection = document.getElementById('gp-requests-section');
+      const reqsList = document.getElementById('gp-requests-list');
+      if(reqs.length){
+        reqsSection.style.display = 'block';
+        reqsList.innerHTML = reqs.map(r =>
+            '<div class="card" style="cursor:default;"><div class="card-body" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">'
             + '<div><div style="font-weight:700; font-size:13.5px;">'+r.name+'</div><div style="font-size:11.5px; color:var(--ink-soft);">'+r.meta+'</div></div>'
             + '<div style="display:flex; gap:6px;">'
             + '<button class="btn btn-primary" style="padding:8px 12px; width:auto;" onclick="respondCustomGroupRequest(\''+currentOwnedGroupId+'\',\''+r.id+'\', true)">אישור</button>'
             + '<button class="btn btn-ghost" style="padding:8px 12px; width:auto;" onclick="respondCustomGroupRequest(\''+currentOwnedGroupId+'\',\''+r.id+'\', false)">דחייה</button>'
             + '</div></div></div>'
-          ).join('')
-        : '<p style="text-align:center; font-size:12px; color:var(--ink-soft); padding:4px 0 8px;">אין בקשות הצטרפות ממתינות</p>';
+          ).join('');
+      } else {
+        reqsSection.style.display = 'none';
+      }
 
       wrap.innerHTML =
         '<div style="display:flex; gap:10px; margin-bottom:16px;">'
@@ -2593,7 +2629,6 @@
         + '<div style="font-size:11.5px; color:var(--ink-soft); margin-bottom:6px;">נפתח וואטסאפ עם ההזמנה. אם זה לא נפתח, זה קישור ההצטרפות להעתקה ידנית:</div>'
         + '<div style="display:flex; gap:8px;"><input id="gp-invite-link" readonly style="flex:1; font-size:11.5px; padding:10px 12px; border-radius:10px; border:1.5px solid var(--line); background:var(--chalk); direction:ltr; text-align:left;"><button class="btn btn-ghost" style="width:auto; padding:9px 14px;" onclick="copyInviteLink()">העתקה</button></div>'
         + '</div>'
-        + gpPanel('בקשות הצטרפות ממתינות', reqsHTML)
         + '<div style="margin-top:8px; padding-top:14px; border-top:1px dashed var(--line); display:flex; gap:10px;">'
           + '<button class="btn btn-ghost" style="flex:1; font-size:13px;" onclick="openEditGroup(\''+currentOwnedGroupId+'\')">✎ עריכת קבוצה</button>'
           + '<button class="btn btn-ghost" style="flex:1; font-size:13px; color:#DC2626; border-color:#FCA5A5;" onclick="confirmDeleteMyGroup(\''+currentOwnedGroupId+'\')">🗑 מחיקת קבוצה</button>'
@@ -2990,16 +3025,20 @@
     withDT.sort((a,b) => a.dt - b.dt);
     return withDT[0].gm;
   }
+  let realMemberGamesCache = [];
+  let hasAnyRealMembership = false;
   function allUpcomingCustomGames(){
     const acc = currentAccount();
-    if(!acc || !acc.myGroups) return [];
     const out = [];
-    acc.myGroups.forEach(g => {
-      (g.games || []).forEach(gm => {
-        const dt = new Date(gm.date+'T'+gm.time);
-        if(!isNaN(dt.getTime())) out.push({ group:g, game:gm, dt });
+    if(acc && acc.myGroups){
+      acc.myGroups.forEach(g => {
+        (g.games || []).forEach(gm => {
+          const dt = new Date(gm.date+'T'+gm.time);
+          if(!isNaN(dt.getTime())) out.push({ group:g, game:gm, dt });
+        });
       });
-    });
+    }
+    out.push(...realMemberGamesCache);
     out.sort((a,b) => a.dt - b.dt);
     return out;
   }
@@ -3191,7 +3230,7 @@
     }
     if(homeGamesWrap) homeGamesWrap.style.display = isMember ? 'block' : 'none';
     if(homeCustomGamesWrap) homeCustomGamesWrap.style.display = hasCustomGames ? 'block' : 'none';
-    if(homeEmptyCta) homeEmptyCta.style.display = (!isMember && !hasCustomGames) ? 'block' : 'none';
+    if(homeEmptyCta) homeEmptyCta.style.display = (!isMember && !hasCustomGames && !hasAnyRealMembership) ? 'block' : 'none';
     // home recommendations, matched to the sports the user picked at onboarding
     renderHomeRecommendations(acc);
     renderHomeGreeting(acc);
@@ -3203,8 +3242,8 @@
     const calContentWrap = document.getElementById('cal-content-wrap');
     const calEmptyCta = document.getElementById('cal-empty-cta');
     if(calContentWrap && calEmptyCta){
-      calContentWrap.style.display = (isMember || hasCustomGames) ? 'block' : 'none';
-      calEmptyCta.style.display = (isMember || hasCustomGames) ? 'none' : 'block';
+      calContentWrap.style.display = (isMember || hasCustomGames || hasAnyRealMembership) ? 'block' : 'none';
+      calEmptyCta.style.display = (isMember || hasCustomGames || hasAnyRealMembership) ? 'none' : 'block';
     }
     // myGroups screen
     const mgManagedDemo = document.getElementById('mygroups-managed-demo');
