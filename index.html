@@ -181,6 +181,10 @@
   .stat-box{ flex:1; background:var(--card); border-radius:16px; padding:14px 10px; text-align:center; box-shadow:var(--shadow); }
   .stat-box .num{ font-family:'Rubik'; font-weight:900; font-size:22px; color:var(--pitch); }
   .stat-box .lbl{ font-size:11px; color:var(--ink-soft); font-weight:600; margin-top:2px; }
+  .stat-row.four{ gap:6px; padding:0 14px 6px; }
+  .stat-row.four .stat-box{ padding:10px 4px; }
+  .stat-row.four .stat-box .num{ font-size:16px; }
+  .stat-row.four .stat-box .lbl{ font-size:9.5px; }
 
   /* header hero */
   .hero{
@@ -440,6 +444,16 @@
       <button class="avatar-btn" onclick="go('profile')" aria-label="הגדרות"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 008.6 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H2a2 2 0 010-4h.09A1.65 1.65 0 003.6 8.6a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H8a1.65 1.65 0 001-1.51V2a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V8c.36.51.94.85 1.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
     </div>
     <div class="scroll">
+
+      <div id="home-invites-wrap" style="display:none;">
+        <span class="section-label">הזמנות שקיבלת</span>
+        <div id="home-invites-list"></div>
+      </div>
+
+      <div id="home-requests-wrap" style="display:none;">
+        <span class="section-label">בקשות הצטרפות לקבוצות שלך</span>
+        <div id="home-requests-list"></div>
+      </div>
 
       <div id="home-mygames-wrap">
         <span class="section-label">המשחקים הקרובים שלך</span>
@@ -854,8 +868,9 @@
 
       <div class="field-divider"></div>
       <span class="section-label">טווח גילאים</span>
-      <div class="chip-row" style="flex-wrap:wrap; overflow:visible;">
-        <div class="chip active" onclick="chipSelect(this)">18-25</div>
+      <div class="chip-row" id="search-age-chips" style="flex-wrap:wrap; overflow:visible;">
+        <div class="chip active" onclick="chipSelect(this)">כל הגילאים</div>
+        <div class="chip" onclick="chipSelect(this)">18-25</div>
         <div class="chip" onclick="chipSelect(this)">25-35</div>
         <div class="chip" onclick="chipSelect(this)">35-45</div>
         <div class="chip" onclick="chipSelect(this)">45-60</div>
@@ -863,7 +878,7 @@
       </div>
 
       <span class="section-label">רמת משחק</span>
-      <div class="chip-row" style="flex-wrap:wrap; overflow:visible;">
+      <div class="chip-row" id="search-level-chips" style="flex-wrap:wrap; overflow:visible;">
         <div class="chip active" onclick="chipSelect(this)">הכל הולך</div>
         <div class="chip" onclick="chipSelect(this)">מתחיל</div>
         <div class="chip" onclick="chipSelect(this)">חובבן</div>
@@ -871,7 +886,7 @@
       </div>
 
       <div style="padding:10px 20px 24px;">
-        <button class="btn btn-primary" onclick="go('searchResults')">חפש 🔍</button>
+        <button class="btn btn-primary" onclick="runRealSearch()">חפש 🔍</button>
       </div>
     </div>
   </section>
@@ -890,6 +905,13 @@
       </div>
       <div class="field-divider"></div>
 
+      <div id="real-results-section" style="display:none;">
+        <span class="section-label">קבוצות שנמצאו</span>
+        <div id="real-results-list"></div>
+        <div class="field-divider"></div>
+      </div>
+
+      <span class="section-label">קבוצות לדוגמה</span>
       <div id="results-list">
         <div class="card" onclick="openGroupPreview(this)"
           data-key="hapoel_ext" data-name="הפועל הצפון" data-subtitle="כדורגל חמישיות · כפר סבא ⚽"
@@ -987,31 +1009,39 @@
       <p id="gp-subtitle">כדורגל חמישיות · כפר סבא ⚽</p>
     </div>
     <div class="scroll" style="margin-top:-14px;">
-      <div class="stat-row" style="margin-top:10px;">
-        <div class="stat-box"><div class="num" id="gp-members">18</div><div class="lbl">חברים</div></div>
+      <div class="stat-row four" style="margin-top:10px;">
+        <div class="stat-box" style="cursor:pointer;" onclick="toggleMembersPanel()"><div class="num" id="gp-members">18</div><div class="lbl">חברים</div></div>
         <div class="stat-box"><div class="num" id="gp-age">25-38</div><div class="lbl">טווח גילאים</div></div>
+        <div class="stat-box"><div class="num" id="gp-level" style="font-size:14px;">הכל הולך</div><div class="lbl">רמת משחק</div></div>
         <div class="stat-box"><div class="num" id="gp-meetings">142</div><div class="lbl">סה"כ מפגשים</div></div>
       </div>
 
-      <div class="field-divider"></div>
-      <span class="section-label">תנאי הצטרפות שקבע מנהל הקבוצה</span>
-      <div class="card" style="cursor:default; box-shadow:none; border:1.5px solid var(--line);">
-        <div class="card-body">
-          <div id="gp-conditions" style="font-size:13px; line-height:1.9;"></div>
+      <div id="gp-main-content">
+        <div class="field-divider"></div>
+        <span class="section-label">תנאי הצטרפות שקבע מנהל הקבוצה</span>
+        <div class="card" style="cursor:default; box-shadow:none; border:1.5px solid var(--line);">
+          <div class="card-body">
+            <div id="gp-conditions" style="font-size:13px; line-height:1.9;"></div>
+          </div>
+        </div>
+
+        <div id="gp-games-section" style="display:none;">
+          <span class="section-label">המשחקים הקרובים</span>
+          <div id="gp-games-list"></div>
+        </div>
+
+        <div style="padding:10px 20px 24px;" id="gp-action">
+          <button class="btn btn-primary" onclick="submitJoinRequest()">בקשה להצטרפות לקבוצה</button>
+          <p style="text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:10px; line-height:1.6;">הצ'אט הקבוצתי ייפתח לצפייה לאחר אישור ההצטרפות</p>
         </div>
       </div>
 
-      <span class="section-label">המשחק הקרוב</span>
-      <div class="card" style="cursor:default;">
-        <div class="card-body">
-          <div style="font-weight:700; font-size:14px;" id="gp-event-date">יום ה׳, 17.7 · 20:00</div>
-          <div class="card-meta"><span id="gp-event-loc">📍 מגרש עירוני, כפר סבא</span><span id="gp-event-attend">👥 8/10 אישרו</span></div>
+      <div id="gp-members-panel" style="display:none;">
+        <div style="padding:14px 20px 6px;">
+          <button class="back-btn" style="color:var(--ink); padding:0;" onclick="closeMembersPanel()">→ חזרה לקבוצה</button>
         </div>
-      </div>
-
-      <div style="padding:10px 20px 24px;" id="gp-action">
-        <button class="btn btn-primary" onclick="submitJoinRequest()">בקשה להצטרפות לקבוצה</button>
-        <p style="text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:10px; line-height:1.6;">הצ'אט הקבוצתי ייפתח לצפייה לאחר אישור ההצטרפות</p>
+        <span class="section-label">חברי הקבוצה ומנהלים</span>
+        <div id="gp-members-list"></div>
       </div>
     </div>
   </section>
@@ -1019,7 +1049,7 @@
   <!-- ============ 8. הקמת קבוצה ============ -->
   <section class="screen" id="screen-createGroup">
     <div class="topbar" style="padding-top:calc(env(safe-area-inset-top,0px) + 16px);">
-      <div style="display:flex; align-items:center;"><img class="app-logo-img" style="width:22px; height:auto; flex-shrink:0;" alt="TEAM"></div>
+      <div id="cg-header-left" style="display:flex; align-items:center;"><img class="app-logo-img" style="width:22px; height:auto; flex-shrink:0;" alt="TEAM"></div>
       <h1 style="font-size:20px;" id="cg-screen-title">הקמת קבוצה</h1>
       <div style="width:24px;"></div>
     </div>
@@ -1422,8 +1452,13 @@
 </div>
 
 <script>
-  const noNavScreens = ['auth']; // only the login screen hides the bottom bar
+  const noNavScreens = ['auth', 'chat']; // login and chat (own fixed input bar) hide the bottom bar
   let navStack = [];
+  let pendingJoinParam = null;
+  try{
+    const params = new URLSearchParams(location.search);
+    if(params.get('join')) pendingJoinParam = params.get('join').trim().toUpperCase();
+  }catch(e){}
 
   const firebaseConfig = {
     apiKey: "AIzaSyBEEXWyV3MUXbiIo9kZ0vN3g9HnKktQV8o",
@@ -1571,6 +1606,7 @@
       if(!state.profile.ownedGroupIds) state.profile.ownedGroupIds = [];
       if(!state.profile.memberGroupIds) state.profile.memberGroupIds = [];
       if(!state.profile.pendingRealRequests) state.profile.pendingRealRequests = [];
+      if(!state.profile.pendingInvites) state.profile.pendingInvites = [];
       if(!state.profile.joinRequests) state.profile.joinRequests = {};
       // pull the latest copy of every group this account owns, fresh from the shared store
       const fresh = await Promise.all(state.profile.ownedGroupIds.map(id => loadGroup(id)));
@@ -1580,9 +1616,27 @@
     if(state.profile){
       postLoginSetup();
       go('home');
+      await processPendingInviteParam();
+      refreshHomeInvitesAndRequests();
     } else {
       renderAll();
     }
+  }
+  async function processPendingInviteParam(){
+    if(!pendingJoinParam) return;
+    const code = pendingJoinParam;
+    pendingJoinParam = null;
+    try{ history.replaceState(null, '', location.pathname); }catch(e){}
+    const acc = currentAccount();
+    if(!acc) return;
+    const g = await loadGroup(code);
+    if(!g) return;
+    if(g.ownerId === acc.id) return;
+    const isMember = (g.members||[]).some(m=>m.id===acc.id);
+    if(isMember) return;
+    if(!acc.pendingInvites) acc.pendingInvites = [];
+    if(!acc.pendingInvites.includes(code)) acc.pendingInvites.push(code);
+    saveState();
   }
   async function saveState(){
     if(!firebaseAvailable || !MY_UID) return;
@@ -1607,8 +1661,83 @@
     if(activeBtn) activeBtn.classList.add('active');
     const scrollEl = document.querySelector('#screen-'+name+' .scroll');
     if(scrollEl) scrollEl.scrollTop = 0;
+    if(name === 'groupPreview'){
+      const mainC = document.getElementById('gp-main-content');
+      const memP = document.getElementById('gp-members-panel');
+      if(mainC) mainC.style.display = 'block';
+      if(memP) memP.style.display = 'none';
+    }
     if(stateReady) renderAll();
     if(name === 'myGroups') refreshRealMemberGroups();
+    if(name === 'home') refreshHomeInvitesAndRequests();
+  }
+  async function refreshHomeInvitesAndRequests(){
+    const acc = currentAccount();
+    const invitesWrap = document.getElementById('home-invites-wrap');
+    const invitesList = document.getElementById('home-invites-list');
+    const requestsWrap = document.getElementById('home-requests-wrap');
+    const requestsList = document.getElementById('home-requests-list');
+    if(!acc || !invitesWrap || !requestsWrap) return;
+
+    // invitations sent to this user via a share link
+    const inviteIds = acc.pendingInvites || [];
+    if(inviteIds.length){
+      const groups = await Promise.all(inviteIds.map(id => loadGroup(id)));
+      let keep = [];
+      let html = '';
+      groups.forEach((g, i) => {
+        const id = inviteIds[i];
+        if(!g) return; // deleted meanwhile — drop silently
+        const isMember = (g.members||[]).some(m=>m.id===acc.id) || g.ownerId === acc.id;
+        if(isMember) return; // already joined — drop
+        keep.push(id);
+        const emoji = SPORT_EMOJI[g.sport] || '🏅';
+        html += '<div class="card" style="cursor:default;"><div class="card-body">'
+          + '<div style="display:flex; align-items:center; gap:10px;">'
+          + '<div style="width:38px;height:38px;border-radius:12px;background:var(--pitch); display:flex; align-items:center; justify-content:center; font-size:16px;">'+emoji+'</div>'
+          + '<div style="flex:1;"><div style="font-weight:700; font-size:13.5px;">הוזמנת ל"'+g.name+'"</div><div style="font-size:11.5px; color:var(--ink-soft);">'+g.sport+' · '+g.city+'</div></div>'
+          + '</div>'
+          + '<div style="display:flex; gap:8px; margin-top:10px;">'
+          + '<button class="btn btn-primary" style="flex:1; padding:9px;" onclick="openRealGroupPreviewFromSearch(\''+id+'\')">צפייה בקבוצה</button>'
+          + '<button class="btn btn-ghost" style="flex:1; padding:9px;" onclick="dismissHomeInvite(\''+id+'\')">התעלמות</button>'
+          + '</div>'
+          + '</div></div>';
+      });
+      if(keep.length !== inviteIds.length){ acc.pendingInvites = keep; saveState(); }
+      invitesWrap.style.display = keep.length ? 'block' : 'none';
+      invitesList.innerHTML = html;
+    } else {
+      invitesWrap.style.display = 'none';
+    }
+
+    // pending join requests to groups this user manages
+    const ownedIds = acc.ownedGroupIds || [];
+    if(ownedIds.length){
+      const groups = await Promise.all(ownedIds.map(id => loadGroup(id)));
+      let html = '';
+      groups.forEach(g => {
+        if(!g || !g.pendingRequests || !g.pendingRequests.length) return;
+        g.pendingRequests.forEach(r => {
+          html += '<div class="card" style="cursor:default;"><div class="card-body" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">'
+            + '<div><div style="font-weight:700; font-size:13.5px;">'+r.name+'</div><div style="font-size:11.5px; color:var(--ink-soft);">מבקש/ת להצטרף ל"'+g.name+'"</div></div>'
+            + '<div style="display:flex; gap:6px;">'
+            + '<button class="btn btn-primary" style="padding:8px 12px; width:auto;" onclick="respondCustomGroupRequest(\''+g.id+'\',\''+r.id+'\', true)">אישור</button>'
+            + '<button class="btn btn-ghost" style="padding:8px 12px; width:auto;" onclick="respondCustomGroupRequest(\''+g.id+'\',\''+r.id+'\', false)">דחייה</button>'
+            + '</div></div></div>';
+        });
+      });
+      requestsWrap.style.display = html ? 'block' : 'none';
+      requestsList.innerHTML = html;
+    } else {
+      requestsWrap.style.display = 'none';
+    }
+  }
+  function dismissHomeInvite(id){
+    const acc = currentAccount();
+    if(!acc) return;
+    acc.pendingInvites = (acc.pendingInvites||[]).filter(x=>x!==id);
+    saveState();
+    refreshHomeInvitesAndRequests();
   }
   async function refreshRealMemberGroups(){
     const acc = currentAccount();
@@ -1668,16 +1797,7 @@
       document.getElementById('gp-conditions').innerHTML = conditions.length
         ? conditions.map(c=>'✅ '+c).join('<br>')
         : 'אין תנאי סף מיוחדים — כולם מוזמנים 🙌';
-      const nextGame = nextGameForGroup(g);
-      if(nextGame){
-        document.getElementById('gp-event-date').textContent = formatGameDate(nextGame.date) + ' · ' + nextGame.time;
-        document.getElementById('gp-event-loc').textContent = '📍 ' + nextGame.address;
-        document.getElementById('gp-event-attend').textContent = '👥 ' + (nextGame.confirmed||1) + '/' + nextGame.capacity + ' אישרו';
-      } else {
-        document.getElementById('gp-event-date').textContent = 'טרם נקבע משחק קרוב';
-        document.getElementById('gp-event-loc').textContent = '';
-        document.getElementById('gp-event-attend').textContent = '';
-      }
+      document.getElementById('gp-level').textContent = g.level || 'הכל הולך';
       go('groupPreview');
       renderGroupPreviewButton();
     });
@@ -1817,7 +1937,7 @@
     onboardData.city = city;
     showOnboardStep(6);
   }
-  function finishOnboarding(){
+  async function finishOnboarding(){
     const selected = Array.from(document.querySelectorAll('#onboard-sport-grid .sport-tile.selected'));
     if(!selected.length){ createdToast('בחרו לפחות ענף אחד'); return; }
     const otherSelected = selected.some(t => t.dataset.sport === 'אחר');
@@ -1844,12 +1964,15 @@
       joinRequests: {},
       ownedGroupIds: [],
       memberGroupIds: [],
-      pendingRealRequests: []
+      pendingRealRequests: [],
+      pendingInvites: []
     };
     saveState();
     postLoginSetup();
     createdToast('ברוכים הבאים, '+name+' 🎉');
     go('home');
+    await processPendingInviteParam();
+    refreshHomeInvitesAndRequests();
   }
   function postLoginSetup(){
     const acc = currentAccount();
@@ -1877,7 +2000,7 @@
     const nameEl = document.getElementById('profile-name');
     if(nameEl) nameEl.textContent = name;
   }
-  const SPORT_EMOJI = { 'כדורגל':'⚽','כדורסל':'🏀','כדורעף':'🏐','פאדל':'🎾','טניס':'🎾','ריצה':'🏃','רכיבה':'🚴','יוגה':'🧘','שחייה':'🏊','כדוריד':'🤾','פילאטיס':'🤸' };
+  const SPORT_EMOJI = { 'כדורגל':'⚽','כדורסל':'🏀','כדורעף':'🏐','פאדל':'🎾','טניס':'🎾','ריצה':'🏃','רכיבה':'🚴','יוגה':'🧘','שחייה':'🏊','כדוריד':'🤾','פילאטיס':'🤸','שחמט':'♟️','טריאתלון':'🏊\u200d♂️','הליכה':'🚶','אגרוף':'🥊' };
   function renderProfileSportChips(){
     const wrap = document.getElementById('profile-sport-chips');
     const acc = currentAccount();
@@ -2068,7 +2191,8 @@
   }
   async function respondCustomGroupRequest(groupId, reqId, approve){
     const acc = currentAccount();
-    const g = acc && acc.myGroups.find(x=>x.id===groupId);
+    if(!acc) return;
+    const g = await loadGroup(groupId);
     if(!g) return;
     if(!g.pendingRequests) g.pendingRequests = [];
     if(!g.members) g.members = [];
@@ -2081,9 +2205,12 @@
       g.members.push({ id: req.requesterId || newId('mem'), name:req.name, role:'member' });
     }
     await saveGroup(g);
+    const localG = acc.myGroups.find(x=>x.id===groupId);
+    if(localG) Object.assign(localG, g);
     saveState();
     renderAll();
     renderGroupPreviewButton();
+    refreshHomeInvitesAndRequests();
     if(currentOwnedGroupId === groupId){
       const membersEl = document.getElementById('gp-members');
       if(membersEl) membersEl.textContent = (g.memberCount || 1);
@@ -2147,15 +2274,64 @@
     document.getElementById('gp-conditions').innerHTML = conditions.length
       ? conditions.map(c=>'✅ '+c).join('<br>')
       : 'אין תנאי סף מיוחדים — כולם מוזמנים 🙌';
-    document.getElementById('gp-event-date').textContent = d.eventdate;
-    document.getElementById('gp-event-loc').textContent = '📍 '+d.eventloc;
-    document.getElementById('gp-event-attend').textContent = '👥 '+d.eventgoing+'/'+d.eventcap+' אישרו';
+    document.getElementById('gp-level').textContent = 'הכל הולך';
     go('groupPreview');
     renderGroupPreviewButton();
   }
   let currentJoinedGroupKey = null;
   let currentRealGroupId = null;
   let currentRealMemberGroupId = null;
+  async function runRealSearch(){
+    go('searchResults');
+    const acc = currentAccount();
+    const sportTile = document.querySelector('#search-sport-grid .sport-tile.active-tile');
+    const sport = sportTile ? sportTile.querySelector('.name').textContent.trim() : null;
+    const ageChip = document.querySelector('#search-age-chips .chip.active');
+    const age = ageChip ? ageChip.textContent.trim() : 'כל הגילאים';
+    const levelChip = document.querySelector('#search-level-chips .chip.active');
+    const level = levelChip ? levelChip.textContent.trim() : 'הכל הולך';
+    const city = document.getElementById('search-city') ? document.getElementById('search-city').value : '';
+    const section = document.getElementById('real-results-section');
+    const wrap = document.getElementById('real-results-list');
+    if(!fbdb){ section.style.display = 'none'; return; }
+    let all = {};
+    try{
+      const snap = await fbdb.ref('groups').once('value');
+      all = snap.exists() ? snap.val() : {};
+    }catch(e){ all = {}; }
+    const matches = Object.values(all).filter(g => {
+      if(!g || g.ownerId === (acc && acc.id)) return false; // skip my own groups here
+      if(sport && g.sport !== sport) return false;
+      if(age !== 'כל הגילאים' && g.ageRange && g.ageRange !== 'כל הגילאים' && g.ageRange !== age) return false;
+      if(level !== 'הכל הולך' && g.level && g.level !== 'הכל הולך' && g.level !== level) return false;
+      if(city && g.city !== city) return false;
+      return true;
+    });
+    section.style.display = 'block';
+    if(!matches.length){
+      wrap.innerHTML = '<p style="text-align:center; font-size:12.5px; color:var(--ink-soft); padding:10px 0;">לא נמצאו קבוצות תואמות לחיפוש — אפשר לנסות סינון רחב יותר, או ליצור קבוצה חדשה משלכם</p>';
+      return;
+    }
+    wrap.innerHTML = matches.map(g => {
+      const emoji = SPORT_EMOJI[g.sport] || '🏅';
+      const gStr = encodeURIComponent(JSON.stringify(g));
+      return '<div class="card" onclick="openRealGroupPreviewFromSearch(\''+g.id+'\')">'
+        + '<div class="card-banner" style="background:linear-gradient(135deg,#1B5B3A,#0D2318);">'
+        + '<span class="badge-sport">'+emoji+' '+g.sport+'</span>'
+        + '<span class="badge">'+g.name+'</span>'
+        + '</div>'
+        + '<div class="card-body"><div class="card-meta">'
+        + '<span>📍 '+g.city+'</span><span>👥 '+(g.memberCount||1)+'/'+g.maxMembers+' חברים</span><span>'+(g.ageRange||'כל הגילאים')+'</span>'
+        + '</div></div></div>';
+    }).join('');
+  }
+  async function openRealGroupPreviewFromSearch(id){
+    const g = await loadGroup(id);
+    if(!g){ createdToast('הקבוצה כבר לא קיימת'); return; }
+    const acc = currentAccount();
+    if(acc && g.ownerId === acc.id){ openMyGroupPreview(g.id); return; }
+    openRealGroupPreview(g);
+  }
   async function promptJoinByCode(){
     const code = (window.prompt('הזן קוד הצטרפות לקבוצה (6 תווים):') || '').trim().toUpperCase();
     if(!code) return;
@@ -2184,16 +2360,7 @@
     document.getElementById('gp-conditions').innerHTML = conditions.length
       ? conditions.map(c=>'✅ '+c).join('<br>')
       : 'אין תנאי סף מיוחדים — כולם מוזמנים 🙌';
-    const nextGame = nextGameForGroup(g);
-    if(nextGame){
-      document.getElementById('gp-event-date').textContent = formatGameDate(nextGame.date) + ' · ' + nextGame.time;
-      document.getElementById('gp-event-loc').textContent = '📍 ' + nextGame.address;
-      document.getElementById('gp-event-attend').textContent = '👥 ' + (nextGame.confirmed||1) + '/' + nextGame.capacity + ' אישרו';
-    } else {
-      document.getElementById('gp-event-date').textContent = 'טרם נקבע משחק קרוב';
-      document.getElementById('gp-event-loc').textContent = '';
-      document.getElementById('gp-event-attend').textContent = '';
-    }
+    document.getElementById('gp-level').textContent = g.level || 'הכל הולך';
     go('groupPreview');
     renderGroupPreviewButton();
   }
@@ -2245,17 +2412,135 @@
     document.getElementById('gp-conditions').innerHTML = conditions.length
       ? conditions.map(c=>'✅ '+c).join('<br>')
       : 'אין תנאי סף מיוחדים — כולם מוזמנים 🙌';
-    if(jg.eventdate){
-      document.getElementById('gp-event-date').textContent = jg.eventdate;
-      document.getElementById('gp-event-loc').textContent = '📍 '+(jg.eventloc||'');
-      document.getElementById('gp-event-attend').textContent = '👥 '+(jg.eventgoing||0)+'/'+(jg.eventcap||'-')+' אישרו';
-    } else {
-      document.getElementById('gp-event-date').textContent = 'טרם נקבע משחק קרוב';
-      document.getElementById('gp-event-loc').textContent = '';
-      document.getElementById('gp-event-attend').textContent = '';
-    }
+    document.getElementById('gp-level').textContent = 'הכל הולך';
     go('groupPreview');
     renderGroupPreviewButton();
+  }
+  function renderGpGamesSection(g, mode){
+    const section = document.getElementById('gp-games-section');
+    const list = document.getElementById('gp-games-list');
+    if(!section || !list) return;
+    if(mode !== 'owner' && mode !== 'member'){
+      section.style.display = 'none';
+      return;
+    }
+    section.style.display = 'block';
+    const games = sortedGames(g);
+    const acc = currentAccount();
+    if(!games.length){
+      list.innerHTML = '<p style="text-align:center; font-size:12px; color:var(--ink-soft); padding:4px 0 10px;">עדיין לא נקבעו משחקים</p>';
+    } else {
+      list.innerHTML = games.map(gm => {
+        const count = gameConfirmedCount(gm);
+        let html = '<div class="card" style="cursor:default; box-shadow:none; border:1px solid var(--line); margin-bottom:8px;"><div class="card-body">'
+          + '<div style="display:flex; justify-content:space-between; align-items:flex-start;">'
+          + '<div><div style="font-weight:700; font-size:13.5px;">'+formatGameDate(gm.date)+' · '+gm.time+'</div>'
+          + '<div class="card-meta" style="margin-top:4px;"><span>📍 '+gm.address+'</span><span>👥 '+count+'/'+gm.capacity+' אישרו</span></div>'
+          + (gm.notes ? '<div style="font-size:11.5px; color:var(--ink-soft); margin-top:4px;">'+gm.notes+'</div>' : '')
+          + '</div>';
+        if(mode === 'owner'){
+          html += '<button class="link-btn" style="padding:0; font-size:11.5px;" onclick="editGame(\''+gm.id+'\')">✎ עריכה</button></div></div></div>';
+        } else {
+          const isIn = (gm.confirmedIds||[]).includes(acc && acc.id);
+          html += '</div>'
+            + '<button class="btn '+(isIn?'btn-ghost':'btn-primary')+'" style="margin-top:8px; font-size:13px;" onclick="toggleGameRSVP(\''+g.id+'\',\''+gm.id+'\')">'+(isIn ? '❌ ביטול הגעה' : '✅ אני מגיע/ה')+'</button>'
+            + '</div></div>';
+        }
+        return html;
+      }).join('');
+    }
+    if(mode === 'owner'){
+      list.innerHTML += '<button class="btn btn-primary" style="margin-top:4px; box-shadow:0 6px 16px rgba(255,87,34,0.35); font-size:15px;" onclick="openCreateGameForGroup(\''+g.id+'\')">קביעת משחק חדש</button>';
+    }
+  }
+  function getCurrentGroupContext(){
+    if(currentOwnedGroupId) return { id: currentOwnedGroupId, mode: 'owner' };
+    if(currentRealMemberGroupId) return { id: currentRealMemberGroupId, mode: 'member' };
+    if(currentRealGroupId) return { id: currentRealGroupId, mode: 'browse' };
+    return null;
+  }
+  async function toggleGameRSVP(groupId, gameId){
+    const g = await loadGroup(groupId);
+    if(!g){ createdToast('הקבוצה לא נמצאה'); return; }
+    const gm = (g.games||[]).find(x=>x.id===gameId);
+    if(!gm) return;
+    if(!gm.confirmedIds) gm.confirmedIds = [];
+    const acc = currentAccount();
+    const idx = gm.confirmedIds.indexOf(acc.id);
+    if(idx === -1){ gm.confirmedIds.push(acc.id); createdToast('אישרת הגעה למשחק ✅'); }
+    else { gm.confirmedIds.splice(idx,1); createdToast('ביטלת את ההגעה למשחק'); }
+    await saveGroup(g);
+    const ctx = getCurrentGroupContext();
+    if(ctx && ctx.id === groupId) renderGpGamesSection(g, ctx.mode);
+  }
+  function toggleMembersPanel(){
+    const ctx = getCurrentGroupContext();
+    if(!ctx) return;
+    document.getElementById('gp-main-content').style.display = 'none';
+    document.getElementById('gp-members-panel').style.display = 'block';
+    refreshMembersPanel();
+  }
+  function closeMembersPanel(){
+    document.getElementById('gp-members-panel').style.display = 'none';
+    document.getElementById('gp-main-content').style.display = 'block';
+  }
+  async function refreshMembersPanel(){
+    const ctx = getCurrentGroupContext();
+    if(!ctx) return;
+    const g = ctx.mode === 'owner' ? (currentAccount().myGroups.find(x=>x.id===ctx.id)) : (await loadGroup(ctx.id));
+    if(!g) return;
+    renderMembersList(g, ctx.mode);
+  }
+  function renderMembersList(g, mode){
+    const wrap = document.getElementById('gp-members-list');
+    if(!wrap) return;
+    const acc = currentAccount();
+    const members = g.members || [];
+    const managers = members.filter(m=>m.role==='manager');
+    const regular = members.filter(m=>m.role!=='manager');
+    const ordered = managers.concat(regular);
+    let html = '<div class="card" style="cursor:default;"><div class="card-body" style="display:flex; align-items:center; justify-content:space-between;">'
+      + '<div><div style="font-weight:700; font-size:13.5px;">'+(g.ownerName||'המנהל')+(g.ownerId===(acc&&acc.id)?' (את/ה)':'')+'</div><div style="font-size:11.5px; color:var(--ink-soft);">👑 מנהל/ת ראשי/ת</div></div>'
+      + '</div></div>';
+    html += ordered.map(m => {
+      const isSelf = m.id === (acc && acc.id);
+      let actions = '';
+      if(mode === 'owner'){
+        actions = '<div style="display:flex; gap:6px;">'
+          + '<button class="icon-btn" style="width:32px;height:32px;" title="מינוי/הסרת ניהול" onclick="confirmToggleManager(\''+g.id+'\',\''+m.id+'\',\''+m.role+'\')">'+(m.role==='manager' ? '🛡️' : '👑')+'</button>'
+          + '<button class="icon-btn" style="width:32px;height:32px;" title="הסרת חבר" onclick="confirmRemoveMember(\''+g.id+'\',\''+m.id+'\',\''+m.name.replace(/'/g,'')+'\')">🗑️</button>'
+          + '</div>';
+      }
+      return '<div class="card" style="cursor:default;"><div class="card-body" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">'
+        + '<div><div style="font-weight:700; font-size:13.5px;">'+m.name+(isSelf?' (את/ה)':'')+'</div><div style="font-size:11.5px; color:var(--ink-soft);">'+(m.role==='manager' ? '🛡️ מנהל/ת קבוצה' : 'חבר/ה')+'</div></div>'
+        + actions
+        + '</div></div>';
+    }).join('');
+    wrap.innerHTML = html;
+  }
+  function confirmToggleManager(groupId, memberId, currentRole){
+    const becoming = currentRole !== 'manager';
+    showConfirmModal(becoming ? 'להפוך את החבר הזה למנהל/ת קבוצה?' : 'להסיר את הניהול מהחבר הזה?', async function(){
+      await toggleMemberManager(groupId, memberId);
+      refreshMembersPanel();
+    }, becoming ? 'הפיכה למנהל' : 'הסרת ניהול');
+  }
+  function confirmRemoveMember(groupId, memberId, name){
+    showConfirmModal('להסיר את '+name+' מהקבוצה? הפעולה לא ניתנת לביטול.', function(){ removeMemberFromGroup(groupId, memberId); }, 'הסרת חבר');
+  }
+  async function removeMemberFromGroup(groupId, memberId){
+    const acc = currentAccount();
+    const g = acc && acc.myGroups.find(x=>x.id===groupId);
+    if(!g) return;
+    const m = (g.members||[]).find(x=>x.id===memberId);
+    g.members = (g.members||[]).filter(x=>x.id!==memberId);
+    g.memberCount = Math.max(1, (g.memberCount||1) - 1);
+    await saveGroup(g);
+    saveState();
+    const membersEl = document.getElementById('gp-members');
+    if(membersEl) membersEl.textContent = g.memberCount;
+    refreshMembersPanel();
+    createdToast(m ? (m.name+' הוסר/ה מהקבוצה') : 'החבר/ה הוסר/ה מהקבוצה');
   }
   function gpPanel(title, inner){
     return '<div style="border:1.5px solid var(--line); border-radius:16px; padding:14px; margin-bottom:14px; background:var(--card);">'
@@ -2269,9 +2554,10 @@
     const acc = currentAccount();
     if(currentRealGroupId){
       const g = await loadGroup(currentRealGroupId);
-      if(!g){ wrap.innerHTML = '<p style="text-align:center; color:var(--ink-soft); font-size:13px;">הקבוצה לא נמצאה</p>'; return; }
+      if(!g){ wrap.innerHTML = '<p style="text-align:center; color:var(--ink-soft); font-size:13px;">הקבוצה לא נמצאה</p>'; renderGpGamesSection(null,'none'); return; }
       const isMemberHere = (g.members||[]).some(m=>m.id===acc.id) || g.ownerId === acc.id;
       const pendingHere = (g.pendingRequests||[]).some(r=>r.requesterId===acc.id);
+      renderGpGamesSection(g, isMemberHere ? 'member' : 'none');
       if(isMemberHere){
         wrap.innerHTML = '<button class="btn btn-ghost" disabled>✅ את/ה כבר חבר/ה בקבוצה הזו</button>';
       } else if(pendingHere){
@@ -2279,26 +2565,13 @@
           + '<p style="text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:10px;"><button class="link-btn" style="padding:0;" onclick="cancelRealJoinRequest()">ביטול הבקשה</button></p>';
       } else {
         wrap.innerHTML = '<button class="btn btn-primary" onclick="submitRealJoinRequest()">בקשה להצטרפות לקבוצה</button>'
-          + '<p style="text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:10px; line-height:1.6;">הצ׳אט הקבוצתי ייפתח לצפייה לאחר אישור ההצטרפות</p>';
+          + '<p style="text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:10px; line-height:1.6;">המשחקים והצ׳אט הקבוצתי ייפתחו לצפייה לאחר אישור ההצטרפות</p>';
       }
       return;
     }
     if(currentOwnedGroupId){
       const g = acc && acc.myGroups.find(x=>x.id===currentOwnedGroupId);
-      const games = (g && g.games) || [];
-      const gamesHTML = games.length
-        ? games.map(gm =>
-            '<div class="card" style="cursor:default; box-shadow:none; border:1px solid var(--line); margin-bottom:8px;"><div class="card-body">'
-            + '<div style="display:flex; justify-content:space-between; align-items:flex-start;">'
-            + '<div><div style="font-weight:700; font-size:13.5px;">'+formatGameDate(gm.date)+' · '+gm.time+'</div>'
-            + '<div class="card-meta" style="margin-top:4px;"><span>📍 '+gm.address+'</span><span>👥 '+(gm.confirmed||1)+'/'+gm.capacity+' אישרו</span></div>'
-            + (gm.notes ? '<div style="font-size:11.5px; color:var(--ink-soft); margin-top:4px;">'+gm.notes+'</div>' : '')
-            + '</div>'
-            + '<button class="link-btn" style="padding:0; font-size:11.5px;" onclick="editGame(\''+gm.id+'\')">✎ עריכה</button>'
-            + '</div>'
-            + '</div></div>'
-          ).join('')
-        : '<p style="text-align:center; font-size:12px; color:var(--ink-soft); padding:4px 0 10px;">עדיין לא נקבעו משחקים</p>';
+      renderGpGamesSection(g, 'owner');
       const reqs = (g && g.pendingRequests) || [];
       const reqsHTML = reqs.length
         ? reqs.map(r =>
@@ -2310,18 +2583,6 @@
             + '</div></div></div>'
           ).join('')
         : '<p style="text-align:center; font-size:12px; color:var(--ink-soft); padding:4px 0 8px;">אין בקשות הצטרפות ממתינות</p>';
-      const members = (g && g.members) || [];
-      const managerCount = g ? groupManagerCount(g) : 1;
-      const membersHTML = '<div class="card" style="cursor:default; box-shadow:none; border:1px solid var(--line); margin-bottom:8px;"><div class="card-body" style="display:flex; align-items:center; justify-content:space-between;">'
-        + '<div><div style="font-weight:700; font-size:13.5px;">את/ה</div><div style="font-size:11.5px; color:var(--ink-soft);">👑 מנהל/ת ראשי/ת</div></div>'
-        + '</div></div>'
-        + members.map(m =>
-            '<div class="card" style="cursor:default; box-shadow:none; border:1px solid var(--line); margin-bottom:8px;"><div class="card-body" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">'
-            + '<div><div style="font-weight:700; font-size:13.5px;">'+m.name+'</div><div style="font-size:11.5px; color:var(--ink-soft);">'+(m.role==='manager' ? '🛡️ מנהל/ת קבוצה' : 'חבר/ה')+'</div></div>'
-            + '<button class="btn btn-ghost" style="padding:8px 12px; width:auto; font-size:12px;" onclick="toggleMemberManager(\''+currentOwnedGroupId+'\',\''+m.id+'\')">'+(m.role==='manager' ? 'הסרת ניהול' : 'הפוך/הפכי למנהל/ת')+'</button>'
-            + '</div></div>'
-          ).join('')
-        + '<p style="text-align:center; font-size:11px; color:var(--ink-soft); padding:2px 0 0;">ניתן להגדיר עד 3 מנהלים בקבוצה ('+managerCount+'/3)</p>';
 
       wrap.innerHTML =
         '<div style="display:flex; gap:10px; margin-bottom:16px;">'
@@ -2329,14 +2590,10 @@
           + '<button class="btn btn-ghost" style="flex:1;" onclick="inviteToGroup(\''+currentOwnedGroupId+'\')">📤 הזמנת חברים</button>'
         + '</div>'
         + '<div id="gp-invite-box" style="display:none; margin-bottom:16px;">'
-        + '<div style="font-size:11.5px; color:var(--ink-soft); margin-bottom:6px;">קוד ההצטרפות — שתפו אותו עם מי שרוצה להצטרף:</div>'
-        + '<div style="display:flex; gap:8px;"><input id="gp-invite-link" readonly style="flex:1; font-size:16px; font-weight:800; letter-spacing:0.08em; text-align:center; padding:10px 12px; border-radius:10px; border:1.5px solid var(--line); background:var(--chalk);"><button class="btn btn-ghost" style="width:auto; padding:9px 14px;" onclick="copyInviteLink()">העתקה</button></div>'
+        + '<div style="font-size:11.5px; color:var(--ink-soft); margin-bottom:6px;">נפתח וואטסאפ עם ההזמנה. אם זה לא נפתח, זה קישור ההצטרפות להעתקה ידנית:</div>'
+        + '<div style="display:flex; gap:8px;"><input id="gp-invite-link" readonly style="flex:1; font-size:11.5px; padding:10px 12px; border-radius:10px; border:1.5px solid var(--line); background:var(--chalk); direction:ltr; text-align:left;"><button class="btn btn-ghost" style="width:auto; padding:9px 14px;" onclick="copyInviteLink()">העתקה</button></div>'
         + '</div>'
-        + gpPanel('📅 משחקים', gamesHTML
-            + '<button class="btn btn-primary" style="margin-top:4px; box-shadow:0 6px 16px rgba(255,87,34,0.35); font-size:15px;" onclick="openCreateGameForGroup(\''+currentOwnedGroupId+'\')">קביעת משחק חדש</button>')
-        + gpPanel('👥 חברים וניהול', membersHTML
-            + '<div style="margin:12px 0 8px; font-weight:700; font-size:12.5px; color:var(--ink-soft);">בקשות הצטרפות ממתינות</div>'
-            + reqsHTML)
+        + gpPanel('בקשות הצטרפות ממתינות', reqsHTML)
         + '<div style="margin-top:8px; padding-top:14px; border-top:1px dashed var(--line); display:flex; gap:10px;">'
           + '<button class="btn btn-ghost" style="flex:1; font-size:13px;" onclick="openEditGroup(\''+currentOwnedGroupId+'\')">✎ עריכת קבוצה</button>'
           + '<button class="btn btn-ghost" style="flex:1; font-size:13px; color:#DC2626; border-color:#FCA5A5;" onclick="confirmDeleteMyGroup(\''+currentOwnedGroupId+'\')">🗑 מחיקת קבוצה</button>'
@@ -2344,18 +2601,20 @@
       return;
     }
     if(currentJoinedGroupKey){
-      const acc2 = currentAccount();
-      const jg = acc2 && acc2.joinedGroups && acc2.joinedGroups[currentJoinedGroupKey];
+      renderGpGamesSection(null, 'none');
       wrap.innerHTML = '<button class="btn btn-primary" onclick="openGroupChat(\'joined\',\''+currentJoinedGroupKey+'\')">💬 כניסה לצ׳אט הקבוצתי</button>'
         + '<p style="text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:10px; line-height:1.6;">✅ את/ה חבר/ה בקבוצה הזו</p>';
       return;
     }
     if(currentRealMemberGroupId){
+      const g = await loadGroup(currentRealMemberGroupId);
+      renderGpGamesSection(g, 'member');
       wrap.innerHTML = '<button class="btn btn-primary" onclick="openGroupChat(\'realmember\',\''+currentRealMemberGroupId+'\')">💬 כניסה לצ׳אט הקבוצתי</button>'
         + '<p style="text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:10px; line-height:1.6;">✅ את/ה חבר/ה בקבוצה הזו</p>';
       return;
     }
     if(!currentPreviewKey) return;
+    renderGpGamesSection(null, 'none');
     const status = acc && acc.joinRequests ? acc.joinRequests[currentPreviewKey] : null;
     const alreadyJoined = !!(acc && acc.joinedGroups && acc.joinedGroups[currentPreviewKey]);
     if(alreadyJoined){
@@ -2374,8 +2633,15 @@
     editingGroupId = null;
     document.getElementById('cg-screen-title').textContent = 'הקמת קבוצה';
     document.getElementById('cg-save-btn').textContent = 'צור קבוצה';
+    document.getElementById('cg-header-left').innerHTML = '<img class="app-logo-img" style="width:22px; height:auto; flex-shrink:0;" alt="TEAM">';
+    applyAppLogoImages();
     resetCreateGroupForm();
     go('createGroup');
+  }
+  function cancelEditGroup(){
+    editingGroupId = null;
+    resetCreateGroupForm();
+    goBack();
   }
   let editingGroupId = null;
   function resetCreateGroupForm(){
@@ -2398,6 +2664,7 @@
     editingGroupId = groupId;
     document.getElementById('cg-screen-title').textContent = 'עריכת קבוצה';
     document.getElementById('cg-save-btn').textContent = 'שמירת שינויים';
+    document.getElementById('cg-header-left').innerHTML = '<button class="back-btn" style="color:var(--ink); padding:0;" onclick="cancelEditGroup()">✕ ביטול</button>';
     document.getElementById('cg-sport').value = g.sport;
     document.getElementById('cg-name').value = g.name;
     document.getElementById('cg-region').value = g.region || '';
@@ -2425,7 +2692,7 @@
       createdToast('מספר המשתתפים חייב להיות לפחות 2');
       return;
     }
-    const sport = document.getElementById('cg-sport').value;
+    const sport = document.getElementById('cg-sport').value.replace(/^\S+\s+/, '').trim();
     const region = document.getElementById('cg-region').value;
     const ageRange = document.querySelector('#cg-age-chips .chip.active').textContent.trim();
     const level = document.querySelector('#cg-level-chips .chip.active').textContent.trim();
@@ -2480,7 +2747,7 @@
     wrap.innerHTML = myGroups.map(g =>
       '<div class="card" onclick="openMyGroupPreview(\''+g.id+'\')">'
       + '<div class="card-banner" style="background:linear-gradient(135deg,#5b3aa0,#241847);">'
-      + '<span class="badge-sport">'+g.sport+'</span>'
+      + '<span class="badge-sport">'+(SPORT_EMOJI[g.sport]||'🏅')+' '+g.sport+'</span>'
       + '<span class="badge">'+g.name+'</span>'
       + '</div>'
       + '<div class="card-body"><div class="card-meta">'
@@ -2511,16 +2778,7 @@
     document.getElementById('gp-conditions').innerHTML = g.conditions.length
       ? g.conditions.map(c=>'✅ '+c).join('<br>')
       : 'אין תנאי סף מיוחדים — כולם מוזמנים 🙌';
-    const nextGame = nextGameForGroup(g);
-    if(nextGame){
-      document.getElementById('gp-event-date').textContent = formatGameDate(nextGame.date) + ' · ' + nextGame.time;
-      document.getElementById('gp-event-loc').textContent = '📍 ' + nextGame.address;
-      document.getElementById('gp-event-attend').textContent = '👥 ' + (nextGame.confirmed||1) + '/' + nextGame.capacity + ' אישרו';
-    } else {
-      document.getElementById('gp-event-date').textContent = 'טרם נקבע משחק ראשון';
-      document.getElementById('gp-event-loc').textContent = '';
-      document.getElementById('gp-event-attend').textContent = '';
-    }
+    document.getElementById('gp-level').textContent = g.level || 'הכל הולך';
     go('groupPreview');
     renderGroupPreviewButton();
   }
@@ -2683,9 +2941,9 @@
     if(!g.games) g.games = [];
     if(editingGameId){
       const gm = g.games.find(x=>x.id===editingGameId);
-      if(gm){ Object.assign(gm, { date, time, address, waze, capacity, notes }); if(gm.confirmed == null) gm.confirmed = 1; }
+      if(gm){ Object.assign(gm, { date, time, address, waze, capacity, notes }); if(!gm.confirmedIds) gm.confirmedIds = [g.ownerId]; }
     } else {
-      g.games.unshift({ id:newId('game'), date, time, address, waze, capacity, notes, confirmed:1 });
+      g.games.unshift({ id:newId('game'), date, time, address, waze, capacity, notes, confirmedIds: [g.ownerId] });
     }
     await saveGroup(g);
     saveState();
@@ -2715,6 +2973,16 @@
       + '<div class="card-meta" style="margin-top:6px;"><span>📍 '+gm.address+'</span><span>👥 '+(gm.confirmed||1)+'/'+gm.capacity+' אישרו</span></div>'
       + '</div></div>';
   }
+  function sortedGames(g){
+    if(!g || !g.games) return [];
+    return g.games.map(gm => ({ gm, dt: new Date(gm.date+'T'+gm.time) }))
+      .filter(x => !isNaN(x.dt.getTime()))
+      .sort((a,b) => a.dt - b.dt)
+      .map(x => x.gm);
+  }
+  function gameConfirmedCount(gm){
+    return gm.confirmedIds ? gm.confirmedIds.length : (gm.confirmed || 1);
+  }
   function nextGameForGroup(g){
     if(!g || !g.games || !g.games.length) return null;
     const withDT = g.games.map(gm => ({ gm, dt: new Date(gm.date+'T'+gm.time) })).filter(x => !isNaN(x.dt.getTime()));
@@ -2742,8 +3010,12 @@
     const box = document.getElementById('gp-invite-box');
     const input = document.getElementById('gp-invite-link');
     box.style.display = 'block';
-    input.value = id;
-    copyInviteLink();
+    const link = location.origin + location.pathname + '?join=' + id;
+    input.value = link;
+    const sportPhrase = g.sport ? ('לקבוצת ' + g.sport + ' שלנו') : 'לקבוצה שלנו';
+    const message = 'היי! בואו תצטרפו ' + sportPhrase + ' — "' + g.name + '" 🙌⚽\n' + link;
+    const waUrl = 'https://wa.me/?text=' + encodeURIComponent(message);
+    window.open(waUrl, '_blank');
   }
   async function copyInviteLink(){
     const input = document.getElementById('gp-invite-link');
@@ -2751,9 +3023,9 @@
     input.select();
     try{
       await navigator.clipboard.writeText(input.value);
-      createdToast('קוד ההזמנה הועתק — שתפו אותו עם חברים ✅');
+      createdToast('קישור ההזמנה הועתק — שתפו אותו עם חברים ✅');
     }catch(e){
-      createdToast('הקוד מוצג למטה — סמנו והעתיקו ידנית');
+      createdToast('הקישור מוצג למטה — סמנו והעתיקו ידנית');
     }
   }
   function submitJoinRequest(){
