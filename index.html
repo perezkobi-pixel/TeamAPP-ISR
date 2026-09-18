@@ -183,6 +183,12 @@
   .stat-box .num{ font-family:'Rubik'; font-weight:900; font-size:22px; color:var(--pitch); }
   .stat-box .lbl{ font-size:11px; color:var(--ink-soft); font-weight:600; margin-top:2px; }
   .stat-row.four{ gap:6px; padding:0 14px 6px; }
+  .stat-box.active-stat{ background:var(--orange); }
+  .stat-box.active-stat .num, .stat-box.active-stat .lbl{ color:#fff; }
+  .city-suggestions{ display:none; margin-top:6px; max-height:220px; overflow-y:auto; border:1.5px solid var(--line); border-radius:12px; background:#fff; }
+  .city-suggestion-item{ padding:10px 14px; font-size:13.5px; cursor:pointer; border-bottom:1px solid var(--line); }
+  .city-suggestion-item:last-child{ border-bottom:none; }
+  .city-suggestion-item:active{ background:var(--chalk); }
   @keyframes app-spin{ to{ transform:rotate(360deg); } }
   .stat-row.four .stat-box{ padding:10px 4px; }
   .stat-row.four .stat-box .num{ font-size:16px; }
@@ -394,8 +400,9 @@
         </div>
         <div style="padding-top:6px;">
           <div class="field"><label>יישוב</label>
-            <input type="text" id="onboard-city-filter" placeholder="הקלד לחיפוש מהיר..." oninput="filterCitySelect('onboard-city-filter','onboard-city')" style="margin-bottom:8px;">
-            <select id="onboard-city"><option value="">בחר/י יישוב...</option></select>
+            <input type="text" id="onboard-city-search" placeholder="הקלד לחיפוש יישוב..." autocomplete="off" oninput="renderCitySuggestions('onboard-city-search','onboard-city','onboard-city-suggestions')" onblur="setTimeout(function(){document.getElementById('onboard-city-suggestions').style.display='none';},200)">
+            <input type="hidden" id="onboard-city">
+            <div id="onboard-city-suggestions" class="city-suggestions"></div>
           </div>
           <div style="margin-top:10px; padding:0 20px;">
             <button class="btn btn-primary" onclick="goToSportsStep()">המשך</button>
@@ -660,9 +667,9 @@
         </select>
       </div>
       <div class="field"><label>יישוב</label>
-        <input type="text" id="search-city-filter" placeholder="הקלד לחיפוש מהיר..." oninput="filterCitySelect('search-city-filter','search-city')" style="margin-bottom:8px;">
-        <select id="search-city"></select>
-        <div id="search-city-count" style="font-size:11px; color:var(--ink-soft); margin-top:4px;"></div>
+        <input type="text" id="search-city-search" placeholder="הקלד לחיפוש יישוב..." autocomplete="off" oninput="renderCitySuggestions('search-city-search','search-city','search-city-suggestions')" onblur="setTimeout(function(){document.getElementById('search-city-suggestions').style.display='none';},200)">
+        <input type="hidden" id="search-city">
+        <div id="search-city-suggestions" class="city-suggestions"></div>
       </div>
 
       <div class="field-divider"></div>
@@ -707,18 +714,19 @@
 
   <!-- ============ 7. עמוד קבוצה — תצוגה מקדימה (טרם הצטרפות) ============ -->
   <section class="screen" id="screen-groupPreview">
-    <div class="hero" style="padding:calc(env(safe-area-inset-top,0px) + 40px) 20px 20px;">
+    <div class="hero" style="padding:calc(env(safe-area-inset-top,0px) + 40px) 20px 20px; position:relative;">
       <button class="back-btn" onclick="goBack()">→ חזרה</button>
+      <button id="gp-corner-icon-btn" style="display:none; position:absolute; top:calc(env(safe-area-inset-top,0px) + 34px); left:20px; background:rgba(255,255,255,0.18); border:1.5px solid rgba(255,255,255,0.4); width:38px; height:38px; border-radius:50%; color:#fff; font-size:16px; cursor:pointer; z-index:2; display:flex; align-items:center; justify-content:center;" onclick="gpCornerIconAction()"></button>
       <span class="kicker" id="gp-breadcrumb" style="display:none;">הקבוצות שלי</span>
       <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
         <h1 style="font-size:26px; margin:0;" id="gp-name">הפועל הצפון</h1>
-        <button id="gp-edit-menu-btn" style="display:none; background:rgba(255,255,255,0.15); border:none; width:32px; height:32px; border-radius:50%; color:#fff; font-size:15px; cursor:pointer; flex-shrink:0;" onclick="openGroupEditMenu()">✎</button>
+        <span id="gp-owner-badge" style="display:none; background:rgba(255,255,255,0.18); border-radius:100px; padding:4px 10px; font-size:11.5px; font-weight:700;">👑 מנהל/ת</span>
       </div>
       <p id="gp-subtitle">כדורגל חמישיות · כפר סבא ⚽</p>
     </div>
     <div class="scroll" style="margin-top:-14px;">
       <div class="stat-row four" style="margin-top:10px;">
-        <div class="stat-box" style="cursor:pointer;" onclick="toggleMembersPanel()"><div class="num" id="gp-members">18</div><div class="lbl">חברים</div></div>
+        <div class="stat-box" id="gp-members-stat-box" style="cursor:pointer;" onclick="toggleMembersPanel()"><div class="num" id="gp-members">18</div><div class="lbl">חברים</div></div>
         <div class="stat-box"><div class="num" id="gp-age">25-38</div><div class="lbl">טווח גילאים</div></div>
         <div class="stat-box"><div class="num" id="gp-level" style="font-size:14px;">הכל</div><div class="lbl">רמת משחק</div></div>
         <div class="stat-box"><div class="num" id="gp-meetings">142</div><div class="lbl">סה"כ מפגשים</div></div>
@@ -761,9 +769,7 @@
       </div>
 
       <div id="gp-members-panel" style="display:none;">
-        <div style="padding:14px 20px 6px;">
-          <button class="back-btn" style="color:var(--ink); padding:0;" onclick="closeMembersPanel()">→ חזרה לקבוצה</button>
-        </div>
+        <div class="field-divider" style="margin-top:14px;"></div>
         <span class="section-label">חברי הקבוצה ומנהלים</span>
         <div id="gp-members-list"></div>
       </div>
@@ -823,9 +829,9 @@
         </select>
       </div>
       <div class="field"><label>יישוב</label>
-        <input type="text" id="cg-city-filter" placeholder="הקלד לחיפוש מהיר..." oninput="filterCitySelect('cg-city-filter','cg-city')" style="margin-bottom:8px;">
-        <select id="cg-city"><option value="">בחר/י יישוב...</option></select>
-        <div id="cg-city-count" style="font-size:11px; color:var(--ink-soft); margin-top:4px;"></div>
+        <input type="text" id="cg-city-search" placeholder="הקלד לחיפוש יישוב..." autocomplete="off" oninput="renderCitySuggestions('cg-city-search','cg-city','cg-city-suggestions')" onblur="setTimeout(function(){document.getElementById('cg-city-suggestions').style.display='none';},200)">
+        <input type="hidden" id="cg-city">
+        <div id="cg-city-suggestions" class="city-suggestions"></div>
       </div>
       <div class="field"><label>מספר משתתפים</label><input id="cg-max" placeholder="לדוגמה: 20 (מינימום 2)" type="number" min="2" onkeydown="if(event.key==='Enter'){event.preventDefault(); this.blur();}"></div>
 
@@ -1072,8 +1078,9 @@
         <button class="link-btn" style="padding:0;" onclick="toggleProfileCityEditor()">✎ שינוי</button>
       </div>
       <div id="profile-city-editor" style="display:none; padding:0 20px 10px;">
-        <input type="text" id="profile-city-filter" placeholder="הקלד לחיפוש מהיר..." oninput="filterCitySelect('profile-city-filter','profile-city-select')" style="margin-bottom:8px;">
-        <select id="profile-city-select"></select>
+        <input type="text" id="profile-city-search" placeholder="הקלד לחיפוש יישוב..." autocomplete="off" oninput="renderCitySuggestions('profile-city-search','profile-city-select','profile-city-suggestions')" onblur="setTimeout(function(){document.getElementById('profile-city-suggestions').style.display='none';},200)">
+        <input type="hidden" id="profile-city-select">
+        <div id="profile-city-suggestions" class="city-suggestions"></div>
         <div style="margin-top:10px;">
           <button class="btn btn-primary" onclick="saveProfileCity()">שמירת יישוב</button>
         </div>
@@ -1253,6 +1260,43 @@
   function fbSafe(obj){
     return obj == null ? obj : JSON.parse(JSON.stringify(obj));
   }
+  let activeGroupListenerRef = null;
+  let activeGroupListenerCallback = null;
+  function detachGroupListener(){
+    if(activeGroupListenerRef && activeGroupListenerCallback){
+      try{ activeGroupListenerRef.off('value', activeGroupListenerCallback); }catch(e){}
+    }
+    activeGroupListenerRef = null;
+    activeGroupListenerCallback = null;
+  }
+  function attachGroupListener(id, onUpdate){
+    detachGroupListener();
+    if(!fbdb || !id) return;
+    const ref = fbdb.ref('groups/'+id);
+    const callback = function(snap){
+      const val = snap.exists() ? snap.val() : null;
+      onUpdate(val);
+    };
+    ref.on('value', callback);
+    activeGroupListenerRef = ref;
+    activeGroupListenerCallback = callback;
+  }
+  function startGroupRealtimeSync(id, mode){
+    attachGroupListener(id, function(fresh){
+      if(!fresh) return;
+      const acc = currentAccount();
+      if(mode === 'owner' && acc){
+        const localG = acc.myGroups.find(x=>x.id===id);
+        if(localG) Object.assign(localG, fresh);
+      }
+      const ctx = getCurrentGroupContext();
+      if(ctx && ctx.id === id) renderGroupPreviewButton();
+      if(currentChatContext && (currentChatContext.groupId === id)){
+        currentChatSharedGroup = fresh;
+        renderChat();
+      }
+    });
+  }
   async function saveGroup(g){
     if(!fbdb) return;
     try{ await fbdb.ref('groups/'+g.id).set(fbSafe(g)); }catch(e){}
@@ -1425,8 +1469,13 @@
     if(name === 'groupPreview'){
       const mainC = document.getElementById('gp-main-content');
       const memP = document.getElementById('gp-members-panel');
+      const memBox = document.getElementById('gp-members-stat-box');
       if(mainC) mainC.style.display = 'block';
       if(memP) memP.style.display = 'none';
+      if(memBox) memBox.classList.remove('active-stat');
+    }
+    if(name !== 'groupPreview' && name !== 'chat'){
+      detachGroupListener();
     }
     if(stateReady) renderAll();
     if(name === 'myGroups' || name === 'home' || name === 'calendar') refreshRealMemberGroups();
@@ -1573,6 +1622,7 @@
       document.getElementById('gp-level').textContent = g.level || 'הכל';
       go('groupPreview');
       renderGroupPreviewButton();
+      startGroupRealtimeSync(id, 'member');
     });
   }
   function goBack(){
@@ -1595,38 +1645,53 @@
     const citySel = document.getElementById(citySelId);
     const includeAll = citySelId === 'search-city';
     populateCitySelect(citySel, includeAll, regionSel.value || null);
+    // clear whatever city was picked before, since the available list just changed
+    const searchInputId = citySelId === 'search-city' ? 'search-city-search' : (citySelId === 'cg-city' ? 'cg-city-search' : citySelId+'-search');
+    setCityPickerValue(searchInputId, citySelId, '');
+    const suggEl = document.getElementById(citySelId+'-suggestions');
+    if(suggEl){ suggEl.style.display = 'none'; suggEl.innerHTML = ''; }
     const countEl = document.getElementById(citySelId + '-count');
     if(countEl){
-      const n = citySel.options.length - 1; // minus the placeholder/"all" option
+      const n = citySel._citySelectBase ? citySel._citySelectBase.length : 0;
       countEl.textContent = regionSel.value
         ? (n + ' יישובים באזור ' + regionSel.value)
         : (n + ' יישובים בסך הכל');
     }
   }
-  function filterCitySelect(inputId, selectId){
-    const input = document.getElementById(inputId);
-    const sel = document.getElementById(selectId);
-    if(!input || !sel || !sel._citySelectBase) return;
-    const q = input.value.trim();
-    const matches = q ? sel._citySelectBase.filter(c => c.includes(q)) : sel._citySelectBase;
-    const currentVal = sel.value;
-    sel.innerHTML = '';
-    const placeholder = document.createElement('option');
-    placeholder.value = '';
-    placeholder.textContent = sel._citySelectIncludeAll ? 'כל היישובים' : 'בחר/י יישוב...';
-    sel.appendChild(placeholder);
-    matches.forEach(city=>{
-      const opt = document.createElement('option');
-      opt.value = city;
-      opt.textContent = city;
-      sel.appendChild(opt);
-    });
-    if(matches.includes(currentVal)) sel.value = currentVal;
-    if(matches.length === 1) sel.value = matches[0];
+  function renderCitySuggestions(searchId, hiddenId, suggId){
+    const search = document.getElementById(searchId);
+    const hidden = document.getElementById(hiddenId);
+    const sugg = document.getElementById(suggId);
+    if(!search || !hidden || !sugg || !hidden._citySelectBase) return;
+    const q = search.value.trim();
+    if(hidden.value && hidden.value !== q) hidden.value = ''; // typing again invalidates the previous pick
+    if(!q){ sugg.style.display = 'none'; sugg.innerHTML = ''; return; }
+    const matches = hidden._citySelectBase.filter(c => c.startsWith(q)).slice(0, 50);
+    if(!matches.length){
+      sugg.innerHTML = '<div style="padding:10px 14px; font-size:12.5px; color:var(--ink-soft);">לא נמצאו יישובים תואמים</div>';
+      sugg.style.display = 'block';
+      return;
+    }
+    sugg.innerHTML = matches.map(c =>
+      '<div class="city-suggestion-item" onclick="selectCitySuggestion(\''+searchId+'\',\''+hiddenId+'\',\''+suggId+'\',\''+c.replace(/'/g,'')+'\')">'+c+'</div>'
+    ).join('');
+    sugg.style.display = 'block';
+  }
+  function selectCitySuggestion(searchId, hiddenId, suggId, city){
+    document.getElementById(searchId).value = city;
+    document.getElementById(hiddenId).value = city;
+    const sugg = document.getElementById(suggId);
+    sugg.style.display = 'none';
+    sugg.innerHTML = '';
+  }
+  function setCityPickerValue(searchId, hiddenId, city){
+    const search = document.getElementById(searchId);
+    const hidden = document.getElementById(hiddenId);
+    if(search) search.value = city || '';
+    if(hidden) hidden.value = city || '';
   }
   function populateCitySelect(sel, includeAllOption, regionFilter){
     if(!sel) return;
-    sel.innerHTML = '';
     const collator = new Intl.Collator('he');
     let cities = Array.from(new Set(ISRAEL_CITIES));
     if(regionFilter){
@@ -1635,23 +1700,6 @@
     const sorted = cities.sort(collator.compare);
     sel._citySelectBase = sorted;
     sel._citySelectIncludeAll = !!includeAllOption;
-    if(includeAllOption){
-      const allOpt = document.createElement('option');
-      allOpt.value = '';
-      allOpt.textContent = 'כל היישובים';
-      sel.appendChild(allOpt);
-    } else {
-      const placeholder = document.createElement('option');
-      placeholder.value = '';
-      placeholder.textContent = 'בחר/י יישוב...';
-      sel.appendChild(placeholder);
-    }
-    sorted.forEach(city=>{
-      const opt = document.createElement('option');
-      opt.value = city;
-      opt.textContent = city;
-      sel.appendChild(opt);
-    });
     sel.dataset.populated = 'true';
   }
 
@@ -1851,7 +1899,7 @@
       const sel = document.getElementById('profile-city-select');
       populateCitySelect(sel, false);
       const acc = currentAccount();
-      if(acc && acc.city) sel.value = acc.city;
+      if(acc && acc.city) setCityPickerValue('profile-city-search', 'profile-city-select', acc.city);
     }
   }
   function saveProfileCity(){
@@ -2169,6 +2217,7 @@
     document.getElementById('gp-level').textContent = g.level || 'הכל';
     go('groupPreview');
     renderGroupPreviewButton();
+    startGroupRealtimeSync(g.id, 'browse');
   }
   async function submitRealJoinRequest(){
     const acc = currentAccount();
@@ -2283,11 +2332,24 @@
   function toggleMembersPanel(){
     const ctx = getCurrentGroupContext();
     if(!ctx) return;
-    document.getElementById('gp-main-content').style.display = 'none';
-    document.getElementById('gp-members-panel').style.display = 'block';
-    refreshMembersPanel();
+    const mainC = document.getElementById('gp-main-content');
+    const panel = document.getElementById('gp-members-panel');
+    const box = document.getElementById('gp-members-stat-box');
+    const isOpen = panel.style.display === 'block';
+    if(isOpen){
+      panel.style.display = 'none';
+      mainC.style.display = 'block';
+      if(box) box.classList.remove('active-stat');
+    } else {
+      mainC.style.display = 'none';
+      panel.style.display = 'block';
+      if(box) box.classList.add('active-stat');
+      refreshMembersPanel();
+    }
   }
   function closeMembersPanel(){
+    const box = document.getElementById('gp-members-stat-box');
+    if(box) box.classList.remove('active-stat');
     document.getElementById('gp-members-panel').style.display = 'none';
     document.getElementById('gp-main-content').style.display = 'block';
   }
@@ -2362,8 +2424,11 @@
     const reqsSectionDefault = document.getElementById('gp-requests-section');
     if(reqsSectionDefault) reqsSectionDefault.style.display = 'none';
     const quickActions = document.getElementById('gp-quick-actions');
-    const editMenuBtn = document.getElementById('gp-edit-menu-btn');
-    if(editMenuBtn) editMenuBtn.style.display = 'none';
+    const cornerBtn = document.getElementById('gp-corner-icon-btn');
+    const ownerBadge = document.getElementById('gp-owner-badge');
+    if(cornerBtn){ cornerBtn.style.display = 'none'; }
+    if(ownerBadge){ ownerBadge.style.display = 'none'; }
+    gpCornerIconMode = null;
     wrap.innerHTML = '';
     if(currentRealGroupId){
       const g = await loadGroup(currentRealGroupId);
@@ -2373,6 +2438,7 @@
       renderGpGamesSection(g, isMemberHere ? 'member' : 'none');
       if(isMemberHere){
         if(quickActions){ quickActions.style.display = 'block'; setupQuickActions('realmember', currentRealGroupId); }
+        if(cornerBtn){ cornerBtn.style.display = 'flex'; cornerBtn.textContent = '🚪'; gpCornerIconMode = { action:'leave', id: currentRealGroupId }; }
         wrap.innerHTML = '<p style="text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:4px; line-height:1.6;">✅ את/ה חבר/ה בקבוצה הזו</p>';
       } else if(pendingHere){
         if(quickActions) quickActions.style.display = 'none';
@@ -2404,7 +2470,8 @@
       } else {
         reqsSection.style.display = 'none';
       }
-      if(editMenuBtn) editMenuBtn.style.display = 'flex';
+      if(cornerBtn){ cornerBtn.style.display = 'flex'; cornerBtn.textContent = '✎'; gpCornerIconMode = { action:'edit', id: currentOwnedGroupId }; }
+      if(ownerBadge) ownerBadge.style.display = 'inline-block';
       if(quickActions){ quickActions.style.display = 'block'; setupQuickActions('custom', currentOwnedGroupId); }
       return;
     }
@@ -2418,6 +2485,7 @@
       const g = await loadGroup(currentRealMemberGroupId);
       renderGpGamesSection(g, 'member');
       if(quickActions){ quickActions.style.display = 'block'; setupQuickActions('realmember', currentRealMemberGroupId); }
+      if(cornerBtn){ cornerBtn.style.display = 'flex'; cornerBtn.textContent = '🚪'; gpCornerIconMode = { action:'leave', id: currentRealMemberGroupId }; }
       wrap.innerHTML = '<p style="text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:4px; line-height:1.6;">✅ את/ה חבר/ה בקבוצה הזו</p>';
       return;
     }
@@ -2462,7 +2530,7 @@
   let editingGroupId = null;
   function resetCreateGroupForm(){
     document.getElementById('cg-name').value = '';
-    document.getElementById('cg-city').value = '';
+    setCityPickerValue('cg-city-search', 'cg-city', '');
     document.getElementById('cg-region').value = '';
     document.getElementById('cg-max').value = '';
     document.getElementById('cg-desc').value = '';
@@ -2485,7 +2553,7 @@
     document.getElementById('cg-name').value = g.name;
     document.getElementById('cg-region').value = g.region || '';
     onRegionChange(document.getElementById('cg-region'), 'cg-city');
-    document.getElementById('cg-city').value = g.city;
+    setCityPickerValue('cg-city-search', 'cg-city', g.city);
     document.getElementById('cg-max').value = g.maxMembers;
     document.querySelectorAll('#cg-age-chips .chip').forEach(c => c.classList.toggle('active', c.textContent.trim() === g.ageRange));
     document.querySelectorAll('#cg-level-chips .chip').forEach(c => c.classList.toggle('active', c.textContent.trim() === g.level));
@@ -2597,6 +2665,7 @@
     document.getElementById('gp-level').textContent = g.level || 'הכל';
     go('groupPreview');
     renderGroupPreviewButton();
+    startGroupRealtimeSync(id, 'owner');
   }
   function showActionSheet(buttons){
     const wrap = document.getElementById('action-sheet-buttons');
@@ -2621,6 +2690,29 @@
       { label: '✎ עריכת קבוצה', onClick: function(){ openEditGroup(id); } },
       { label: '🗑 מחיקת קבוצה', danger: true, onClick: function(){ confirmDeleteMyGroup(id); } }
     ]);
+  }
+  let gpCornerIconMode = null;
+  function gpCornerIconAction(){
+    if(!gpCornerIconMode) return;
+    if(gpCornerIconMode.action === 'edit') openGroupEditMenu();
+    else if(gpCornerIconMode.action === 'leave') confirmLeaveGroup(gpCornerIconMode.id);
+  }
+  function confirmLeaveGroup(groupId){
+    showConfirmModal('לעזוב את הקבוצה? תצטרך/י לבקש להצטרף מחדש כדי לחזור.', function(){ leaveGroup(groupId); }, 'עזיבת קבוצה');
+  }
+  async function leaveGroup(groupId){
+    const acc = currentAccount();
+    if(!acc) return;
+    const g = await loadGroup(groupId);
+    if(g){
+      g.members = (g.members||[]).filter(m=>m.id!==acc.id);
+      g.memberCount = Math.max(1, (g.memberCount||1) - 1);
+      await saveGroup(g);
+    }
+    acc.pendingRealRequests = (acc.pendingRealRequests||[]).filter(id=>id!==groupId);
+    saveState();
+    createdToast('עזבת את הקבוצה');
+    go('myGroups');
   }
   let confirmModalCallback = null;
   function showConfirmModal(text, onConfirm, okLabel){
@@ -2940,6 +3032,9 @@
     document.getElementById('chat-subtitle').textContent = subtitle;
     go('chat');
     renderChat();
+    if(type === 'custom' || type === 'realmember'){
+      startGroupRealtimeSync(idOrKey, type === 'custom' ? 'owner' : 'member');
+    }
   }
   function renderChat(){
     const wrap = document.getElementById('chat-messages');
@@ -3114,8 +3209,6 @@
 
   populateCitySelect(document.getElementById('search-city'), true);
   populateCitySelect(document.getElementById('cg-city'), false);
-  document.getElementById('search-city-count').textContent = (document.getElementById('search-city').options.length - 1) + ' יישובים בסך הכל';
-  document.getElementById('cg-city-count').textContent = (document.getElementById('cg-city').options.length - 1) + ' יישובים בסך הכל';
   loadState();
 </script>
 </body>
