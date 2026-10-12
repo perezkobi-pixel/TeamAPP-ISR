@@ -567,7 +567,7 @@
         <button class="btn btn-ghost" onclick="startNewGroup()">➕ יצירת קבוצה</button>
       </div>
 
-      <div style="padding:6px 20px 20px;">
+      <div id="mygroups-search-wrap" style="padding:6px 20px 20px;">
         <button class="btn btn-ghost" onclick="go('search')">🔍 חיפוש קבוצה חדשה</button>
       </div>
     </div>
@@ -725,10 +725,11 @@
     <div class="hero" style="padding:calc(env(safe-area-inset-top,0px) + 40px) 20px 20px; position:relative;">
       <button class="back-btn" onclick="goBack()">→ חזרה</button>
       <button id="gp-corner-icon-btn" style="display:none; position:absolute; top:calc(env(safe-area-inset-top,0px) + 34px); left:20px; background:rgba(255,255,255,0.18); border:1.5px solid rgba(255,255,255,0.4); width:38px; height:38px; border-radius:50%; color:#fff; font-size:16px; cursor:pointer; z-index:2; display:flex; align-items:center; justify-content:center;" onclick="gpCornerIconAction()"></button>
+      <button id="gp-corner-trash-btn" style="display:none; position:absolute; top:calc(env(safe-area-inset-top,0px) + 34px); left:66px; background:rgba(255,255,255,0.18); border:1.5px solid rgba(255,255,255,0.4); width:38px; height:38px; border-radius:50%; color:#fff; font-size:16px; cursor:pointer; z-index:2; display:flex; align-items:center; justify-content:center;" onclick="gpTrashAction()"></button>
       <span class="kicker" id="gp-breadcrumb" style="display:none;">הקבוצות שלי</span>
       <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
         <h1 style="font-size:26px; margin:0;" id="gp-name">הפועל הצפון</h1>
-        <span id="gp-owner-badge" style="display:none; background:none; color:#fff; border:none; outline:none; padding:0; font-size:12.5px; font-weight:800;">🌟 את מנהל</span>
+        <span id="gp-owner-badge" style="display:none; background:none; color:#fff; border:none; outline:none; padding:0; font-size:12.5px; font-weight:800;">👑 את/ה מנהל/ת</span>
       </div>
       <p id="gp-subtitle">כדורגל חמישיות · כפר סבא ⚽</p>
     </div>
@@ -744,13 +745,11 @@
         <div class="field-divider"></div>
         <div id="gp-desc-wrap" style="display:none;">
           <span class="section-label">על הקבוצה</span>
-          <div class="card" style="cursor:default; box-shadow:none; border:1.5px solid var(--line);"><div class="card-body"><div id="gp-desc" style="font-size:13px; line-height:1.8; white-space:pre-wrap;"></div></div></div>
+          <div style="padding:0 20px 8px;"><div id="gp-desc" style="font-size:13px; line-height:1.8; white-space:pre-wrap;"></div></div>
         </div>
         <span class="section-label">תנאי הצטרפות שקבע מנהל הקבוצה</span>
-        <div class="card" style="cursor:default; box-shadow:none; border:1.5px solid var(--line);">
-          <div class="card-body">
-            <div id="gp-conditions" style="font-size:13px; line-height:1.9;"></div>
-          </div>
+        <div style="padding:0 20px 8px;">
+          <div id="gp-conditions" style="font-size:13px; line-height:1.9;"></div>
         </div>
 
         <div id="gp-requests-section" style="display:none;">
@@ -1218,6 +1217,12 @@
     Object.keys(localG).forEach(k=>{ delete localG[k]; });
     Object.assign(localG, normalizeGroup(fresh));
   }
+  function updateGroupScreenLive(fresh){
+    const el = document.getElementById('gp-members');
+    if(el) el.textContent = fresh.memberCount || 1;
+    const panel = document.getElementById('gp-members-panel');
+    if(panel && panel.style.display !== 'none') refreshMembersPanel();
+  }
   function startGroupRealtimeSync(id, mode){
     attachGroupListener(id, function(fresh){
       if(!fresh) return;
@@ -1227,7 +1232,7 @@
         if(localG) replaceGroupContents(localG, fresh);
       }
       const ctx = getCurrentGroupContext();
-      if(ctx && ctx.id === id){ setGroupDesc(fresh.desc); renderGroupPreviewButton(); }
+      if(ctx && ctx.id === id){ setGroupDesc(fresh.desc); updateGroupScreenLive(fresh); renderGroupPreviewButton(); }
       if(currentChatContext && (currentChatContext.groupId === id)){
         currentChatSharedGroup = fresh;
         renderChat();
@@ -1250,7 +1255,7 @@
         if(!fresh) return;
         const a = currentAccount();
         const localG = a && a.myGroups.find(x=>x.id===id);
-        if(localG){ replaceGroupContents(localG, fresh); renderAll(); }
+        if(localG){ replaceGroupContents(localG, fresh); renderAll(); const c = getCurrentGroupContext(); if(c && c.id === id) updateGroupScreenLive(fresh); }
         else refreshRealMemberGroups();
       };
       ref.on('value', cb);
@@ -2143,8 +2148,7 @@
     const matches = Object.values(all).filter(g => {
       if(!g || g.ownerId === (acc && acc.id)) return false; // skip my own groups here
       if(sport && g.sport !== sport) return false;
-      if(age === 'הכל'){ if(g.ageRange && g.ageRange !== 'הכל') return false; }
-      else if(g.ageRange && g.ageRange !== 'הכל' && g.ageRange !== age) return false;
+      if(age !== 'הכל' && g.ageRange && g.ageRange !== 'הכל' && g.ageRange !== age) return false;
       if(level !== 'הכל' && g.level && g.level !== 'הכל' && g.level !== level) return false;
       if(city && g.city !== city) return false;
       return true;
@@ -2433,6 +2437,8 @@
     const cornerBtn = document.getElementById('gp-corner-icon-btn');
     const ownerBadge = document.getElementById('gp-owner-badge');
     if(cornerBtn){ cornerBtn.style.display = 'none'; }
+    const trashBtn = document.getElementById('gp-corner-trash-btn');
+    if(trashBtn) trashBtn.style.display = 'none';
     if(ownerBadge){ ownerBadge.style.display = 'none'; }
     gpCornerIconMode = null;
     wrap.innerHTML = '';
@@ -2476,8 +2482,8 @@
       } else {
         reqsSection.style.display = 'none';
       }
-      if(cornerBtn){ cornerBtn.style.display = 'flex'; cornerBtn.textContent = '✎'; gpCornerIconMode = { action:'edit', id: currentOwnedGroupId }; }
-      if(ownerBadge){ ownerBadge.textContent = '🌟 ' + (acc && acc.gender === 'נקבה' ? 'את מנהלת' : 'את מנהל'); ownerBadge.style.display = 'inline-block'; }
+      if(cornerBtn){ cornerBtn.style.display = 'flex'; cornerBtn.textContent = '✎'; gpCornerIconMode = { action:'edit', id: currentOwnedGroupId }; if(trashBtn){ trashBtn.style.display = 'flex'; trashBtn.innerHTML = TRASH_SVG; } }
+      if(ownerBadge){ ownerBadge.textContent = '👑 את/ה מנהל/ת'; ownerBadge.style.display = 'inline-block'; }
       if(quickActions){ quickActions.style.display = 'block'; setupQuickActions('custom', currentOwnedGroupId); }
       return;
     }
@@ -2693,6 +2699,8 @@
   function closeActionSheet(){
     document.getElementById('action-sheet-overlay').style.display = 'none';
   }
+  const TRASH_SVG = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6h17"/><path d="M8.5 6l1.2-2.2h4.6L15.5 6"/><path d="M5.5 9.5v6.5a4 4 0 004 4h5a4 4 0 004-4V9.5"/><path d="M10 12.5v4M14 12.5v4"/></svg>';
+  function gpTrashAction(){ if(currentOwnedGroupId) confirmDeleteMyGroup(currentOwnedGroupId); }
   function openGroupEditMenu(){
     if(!currentOwnedGroupId) return;
     const id = currentOwnedGroupId;
@@ -2707,7 +2715,7 @@
   let gpCornerIconMode = null;
   function gpCornerIconAction(){
     if(!gpCornerIconMode) return;
-    if(gpCornerIconMode.action === 'edit') openGroupEditMenu();
+    if(gpCornerIconMode.action === 'edit') openEditGroup(gpCornerIconMode.id);
     else if(gpCornerIconMode.action === 'leave') confirmLeaveGroup(gpCornerIconMode.id);
   }
   function confirmLeaveGroup(groupId){
@@ -2961,20 +2969,15 @@
     const acc = currentAccount();
     const isOwner = acc && g.ownerId === acc.id;
     const navCall = isOwner ? "openMyGroupPreview('"+g.id+"')" : "openRealMemberView('"+g.id+"')";
-    return '<div class="card" onclick="'+navCall+'"'+(isFirst ? ' style="position:relative;"' : '')+'>'
-      + (isFirst ? '<div style="height:4px; background:var(--orange);"></div>' : '')
+    return '<div class="card" onclick="'+navCall+'">'
       + '<div class="card-body" style="display:flex; align-items:center; gap:14px; padding:14px 16px;">'
+      + '<div style="text-align:center; min-width:52px; flex-shrink:0; font-family:\'Rubik\'; font-weight:900; font-size:20px; color:var(--orange);">'+gm.time+'</div>'
       + '<div style="flex:1; min-width:0;">'
       + '<div style="font-weight:700; font-size:14px;">'+(SPORT_EMOJI[g.sport]||'🏅')+' '+g.name+'</div>'
       + '<div class="card-meta" style="margin-top:4px;">'
       + '<span onclick="event.stopPropagation(); openWaze(\''+(gm.address||'').replace(/'/g,'')+'\')" style="cursor:pointer; text-decoration:underline;">📍 '+gm.address+'</span>'
       + '<span onclick="event.stopPropagation(); showConfirmedMembersModal(\''+g.id+'\',\''+gm.id+'\')" style="cursor:pointer; text-decoration:underline;">👥 '+gameConfirmedCount(gm)+'/'+gm.capacity+' אישרו</span>'
-      + '</div>'
-      + '</div>'
-      + '<div style="text-align:center; min-width:56px; flex-shrink:0;">'
-      + '<div style="font-family:\'Rubik\'; font-weight:900; font-size:19px; color:'+(isFirst ? 'var(--orange)' : 'var(--pitch-dark)')+';">'+gm.time+'</div>'
-      + '<div style="font-size:10.5px; color:var(--ink-soft); font-weight:600; margin-top:1px;">'+weekday+(dateNum?', '+dateNum:'')+'</div>'
-      + '</div></div></div>';
+      + '</div></div></div></div>';
   }
   function sortedGames(g){
     if(!g || !g.games) return [];
@@ -3299,6 +3302,8 @@
     if(mgMemberDemo) mgMemberDemo.style.display = isMember ? 'block' : 'none';
     if(mgManagedEmpty) mgManagedEmpty.style.display = (!isMember && !hasCustomGroups) ? 'block' : 'none';
     const hasRealPending = !!(acc && acc.pendingRealRequests && acc.pendingRealRequests.length);
+    const mgSearchWrap = document.getElementById('mygroups-search-wrap');
+    if(mgSearchWrap) mgSearchWrap.style.display = (hasCustomGroups || joinedKeys.length || hasRealPending || hasAnyRealMembership) ? 'none' : 'block';
     if(mgMemberEmpty) mgMemberEmpty.style.display = (isMember || joinedKeys.length || hasRealPending) ? 'none' : 'block';
     // profile screen
     const profGroupsCount = document.getElementById('profile-groups-count');
