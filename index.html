@@ -454,10 +454,20 @@
             <div class="sport-tile" data-sport="שחייה" onclick="toggleOnboardSport(this)"><div class="emo">🏊</div><div class="name">שחייה</div></div>
             <div class="sport-tile" data-sport="כדוריד" onclick="toggleOnboardSport(this)"><div class="emo">🤾</div><div class="name">כדוריד</div></div>
             <div class="sport-tile" data-sport="פילאטיס" onclick="toggleOnboardSport(this)"><div class="emo">🤸</div><div class="name">פילאטיס</div></div>
-            <div class="sport-tile" data-sport="אחר" onclick="toggleOnboardSport(this)"><div class="emo">➕</div><div class="name">אחר</div></div>
-          </div>
-          <div id="onboard-other-wrap" style="display:none; margin-top:14px; padding:0 20px;">
-            <div class="field" style="margin:0;"><label>איזה ענף?</label><input id="onboard-other-input" placeholder="כתבו את הענף"></div>
+            <div class="sport-tile extra-sport" style="display:none;" data-sport="טריאתלון" onclick="toggleOnboardSport(this)"><div class="emo">🏊‍♂️</div><div class="name">טריאתלון</div></div>
+            <div class="sport-tile extra-sport" style="display:none;" data-sport="הליכה" onclick="toggleOnboardSport(this)"><div class="emo">🚶</div><div class="name">הליכה</div></div>
+            <div class="sport-tile extra-sport" style="display:none;" data-sport="אגרוף" onclick="toggleOnboardSport(this)"><div class="emo">🥊</div><div class="name">אגרוף</div></div>
+            <div class="sport-tile extra-sport" style="display:none;" data-sport="כושר קבוצתי" onclick="toggleOnboardSport(this)"><div class="emo">🏋️</div><div class="name">כושר קבוצתי</div></div>
+            <div class="sport-tile extra-sport" style="display:none;" data-sport="סקווש" onclick="toggleOnboardSport(this)"><div class="emo">🎯</div><div class="name">סקווש</div></div>
+            <div class="sport-tile extra-sport" style="display:none;" data-sport="אומנויות לחימה" onclick="toggleOnboardSport(this)"><div class="emo">🥋</div><div class="name">אומנויות לחימה</div></div>
+            <div class="sport-tile extra-sport" style="display:none;" data-sport="גולף" onclick="toggleOnboardSport(this)"><div class="emo">⛳</div><div class="name">גולף</div></div>
+            <div class="sport-tile extra-sport" style="display:none;" data-sport="ביליארד" onclick="toggleOnboardSport(this)"><div class="emo">🎱</div><div class="name">ביליארד</div></div>
+            <div class="sport-tile extra-sport" style="display:none;" data-sport="באולינג" onclick="toggleOnboardSport(this)"><div class="emo">🎳</div><div class="name">באולינג</div></div>
+            <div class="sport-tile extra-sport" style="display:none;" data-sport="SUP / גלישה" onclick="toggleOnboardSport(this)"><div class="emo">🏄</div><div class="name">SUP / גלישה</div></div>
+            <div class="sport-tile extra-sport" style="display:none;" data-sport="סקייטבורד" onclick="toggleOnboardSport(this)"><div class="emo">🛹</div><div class="name">סקייטבורד</div></div>
+            <div class="sport-tile extra-sport" style="display:none;" data-sport="אתלטיקה" onclick="toggleOnboardSport(this)"><div class="emo">🏅</div><div class="name">אתלטיקה</div></div>
+            <div class="sport-tile extra-sport" style="display:none;" data-sport="שחמט" onclick="toggleOnboardSport(this)"><div class="emo">♟️</div><div class="name">שחמט</div></div>
+            <div class="sport-tile more-tile" onclick="toggleMoreSports(this)"><div class="emo">➕</div><div class="name">עוד</div></div>
           </div>
           <div style="margin-top:24px; padding:0 20px;">
             <button class="btn btn-primary" onclick="finishOnboarding()">בואו נתחיל</button>
@@ -559,6 +569,9 @@
       <div id="mygroups-member-extra"></div>
       <div id="mygroups-real-member-extra"></div>
       <p id="mygroups-member-empty" style="display:none; text-align:center; color:var(--ink-soft); font-size:13px; padding:10px 20px 4px; line-height:1.6;">עדיין לא הצטרפת לאף קבוצה</p>
+      <div id="mygroups-search-wrap" style="padding:6px 20px 10px;">
+        <button class="btn btn-ghost" onclick="go('search')">🔍 חיפוש קבוצה חדשה</button>
+      </div>
 
       <div class="field-divider"></div>
 
@@ -583,10 +596,6 @@
       <div id="mygroups-managed-empty" style="display:none; text-align:center; padding:10px 20px 4px;">
         <p style="color:var(--ink-soft); font-size:13px; line-height:1.6; margin-bottom:12px;">עדיין לא הקמת אף קבוצה</p>
         <button class="btn btn-ghost" onclick="startNewGroup()">➕ יצירת קבוצה</button>
-      </div>
-
-      <div id="mygroups-search-wrap" style="padding:6px 20px 20px;">
-        <button class="btn btn-ghost" onclick="go('search')">🔍 חיפוש קבוצה חדשה</button>
       </div>
     </div>
   </section>
@@ -1018,6 +1027,20 @@
           <div class="sport-tile" data-sport="שחייה" onclick="toggleOnboardSport(this)"><div class="emo">🏊</div><div class="name">שחייה</div></div>
           <div class="sport-tile" data-sport="כדוריד" onclick="toggleOnboardSport(this)"><div class="emo">🤾</div><div class="name">כדוריד</div></div>
           <div class="sport-tile" data-sport="פילאטיס" onclick="toggleOnboardSport(this)"><div class="emo">🤸</div><div class="name">פילאטיס</div></div>
+          <div class="sport-tile extra-sport" style="display:none;" data-sport="טריאתלון" onclick="toggleOnboardSport(this)"><div class="emo">🏊‍♂️</div><div class="name">טריאתלון</div></div>
+          <div class="sport-tile extra-sport" style="display:none;" data-sport="הליכה" onclick="toggleOnboardSport(this)"><div class="emo">🚶</div><div class="name">הליכה</div></div>
+          <div class="sport-tile extra-sport" style="display:none;" data-sport="אגרוף" onclick="toggleOnboardSport(this)"><div class="emo">🥊</div><div class="name">אגרוף</div></div>
+          <div class="sport-tile extra-sport" style="display:none;" data-sport="כושר קבוצתי" onclick="toggleOnboardSport(this)"><div class="emo">🏋️</div><div class="name">כושר קבוצתי</div></div>
+          <div class="sport-tile extra-sport" style="display:none;" data-sport="סקווש" onclick="toggleOnboardSport(this)"><div class="emo">🎯</div><div class="name">סקווש</div></div>
+          <div class="sport-tile extra-sport" style="display:none;" data-sport="אומנויות לחימה" onclick="toggleOnboardSport(this)"><div class="emo">🥋</div><div class="name">אומנויות לחימה</div></div>
+          <div class="sport-tile extra-sport" style="display:none;" data-sport="גולף" onclick="toggleOnboardSport(this)"><div class="emo">⛳</div><div class="name">גולף</div></div>
+          <div class="sport-tile extra-sport" style="display:none;" data-sport="ביליארד" onclick="toggleOnboardSport(this)"><div class="emo">🎱</div><div class="name">ביליארד</div></div>
+          <div class="sport-tile extra-sport" style="display:none;" data-sport="באולינג" onclick="toggleOnboardSport(this)"><div class="emo">🎳</div><div class="name">באולינג</div></div>
+          <div class="sport-tile extra-sport" style="display:none;" data-sport="SUP / גלישה" onclick="toggleOnboardSport(this)"><div class="emo">🏄</div><div class="name">SUP / גלישה</div></div>
+          <div class="sport-tile extra-sport" style="display:none;" data-sport="סקייטבורד" onclick="toggleOnboardSport(this)"><div class="emo">🛹</div><div class="name">סקייטבורד</div></div>
+          <div class="sport-tile extra-sport" style="display:none;" data-sport="אתלטיקה" onclick="toggleOnboardSport(this)"><div class="emo">🏅</div><div class="name">אתלטיקה</div></div>
+          <div class="sport-tile extra-sport" style="display:none;" data-sport="שחמט" onclick="toggleOnboardSport(this)"><div class="emo">♟️</div><div class="name">שחמט</div></div>
+          <div class="sport-tile more-tile" onclick="toggleMoreSports(this)"><div class="emo">➕</div><div class="name">עוד</div></div>
         </div>
         <div style="margin-top:10px;">
           <button class="btn btn-primary" onclick="saveProfileSports()">שמירת ענפים</button>
@@ -1475,7 +1498,12 @@
   }
   async function saveGroup(g){
     if(!fbdb) return;
-    try{ await fbdb.ref('groups/'+g.id).set(fbSafe(g)); }catch(e){}
+    try{ await fbdb.ref('groups/'+g.id).set(fbSafe(g)); return true; }
+    catch(e){
+      console.error('saveGroup failed', e);
+      createdToast('⚠️ השמירה נכשלה — בדקו חיבור ונסו שוב');
+      return false;
+    }
   }
   async function deleteGroupDoc(id){
     if(!fbdb) return;
@@ -1590,7 +1618,7 @@
       state = defaultState();
     }
     if(state.profile){
-      if(!state.profile.id) state.profile.id = MY_UID;
+      state.profile.id = MY_UID;
       if(!state.profile.joinedGroups) state.profile.joinedGroups = {};
       if(!state.profile.myGroups) state.profile.myGroups = [];
       if(!state.profile.ownedGroupIds) state.profile.ownedGroupIds = [];
@@ -1599,14 +1627,17 @@
       if(!state.profile.pendingInvites) state.profile.pendingInvites = [];
       if(!state.profile.joinRequests) state.profile.joinRequests = {};
       // pull the latest copy of every group this account owns, fresh from the shared store
-      const fresh = await Promise.all(state.profile.ownedGroupIds.map(id => loadGroup(id)));
-      state.profile.myGroups = fresh.filter(Boolean);
+      state.profile.myGroups = [];
+      await syncOwnedGroups();
+      lastSavedProfileJson = canonProfile(state.profile);
+      attachProfileListener();
     }
     stateReady = true;
     if(state.profile){
       if(!state.profile.consent && consentRecord){ state.profile.consent = consentRecord; saveState(); }
       postLoginSetup();
       go('home');
+      ensureBackgroundListeners();
       hideAppLoadingOverlay();
       await processPendingInviteParam();
       refreshHomeInvitesAndRequests();
@@ -1617,6 +1648,83 @@
       go('auth');
       showOnboardStep(2);
     }
+  }
+  // ---- cross-device sync of the account itself ----
+  let lastSavedProfileJson = '';
+  let profileListenerRef = null;
+  function canonProfile(p){
+    if(!p) return '';
+    const c = function(v){
+      if(Array.isArray(v)) return v.length ? v.map(c) : undefined;
+      if(v && typeof v === 'object'){
+        const o = {}; let any = false;
+        Object.keys(v).sort().forEach(k=>{ if(k === 'myGroups') return; const r = c(v[k]); if(r !== undefined){ o[k] = r; any = true; } });
+        return any ? o : undefined;
+      }
+      return (v === null || v === undefined) ? undefined : v;
+    };
+    return JSON.stringify(c(p) || {});
+  }
+  function fillProfileDefaults(p){
+    if(!p.joinedGroups) p.joinedGroups = {};
+    if(!p.ownedGroupIds) p.ownedGroupIds = [];
+    if(!p.memberGroupIds) p.memberGroupIds = [];
+    if(!p.pendingRealRequests) p.pendingRealRequests = [];
+    if(!p.pendingInvites) p.pendingInvites = [];
+    if(!p.joinRequests) p.joinRequests = {};
+    if(!p.memberOf) p.memberOf = [];
+    if(!p.sports) p.sports = [];
+    return p;
+  }
+  // the groups I own are found by asking the shared store (ownerId === my uid), so a group created on
+  // any device is always found on every other device, regardless of what the profile copy remembers
+  async function syncOwnedGroups(){
+    const acc = currentAccount();
+    if(!acc || !fbdb || !MY_UID) return;
+    const prevIds = (acc.ownedGroupIds||[]).slice();
+    let found = null;
+    try{
+      const snap = await fbdb.ref('groups').orderByChild('ownerId').equalTo(MY_UID).once('value');
+      const v = snap.val() || {};
+      found = Object.keys(v).map(k => normalizeGroup(v[k]));
+    }catch(e){ console.warn('owned-groups query failed, falling back to known ids', e); }
+    if(found === null){
+      const loaded = await Promise.all(prevIds.map(id => loadGroup(id)));
+      found = loaded.filter(g => g && g.ownerId === MY_UID).map(normalizeGroup);
+    }
+    const order = id => { const i = prevIds.indexOf(id); return i < 0 ? -1 : i; };
+    found.sort((a,b) => order(a.id) - order(b.id));
+    const oldById = {};
+    (acc.myGroups||[]).forEach(g => { oldById[g.id] = g; });
+    acc.myGroups = found.map(g => {
+      const old = oldById[g.id];
+      if(old){ replaceGroupContents(old, g); return old; }
+      return g;
+    });
+    acc.ownedGroupIds = acc.myGroups.map(g => g.id);
+    if(acc.ownedGroupIds.join() !== prevIds.join()) saveState();
+  }
+  function attachProfileListener(){
+    if(!fbdb || !MY_UID) return;
+    if(profileListenerRef){ try{ profileListenerRef.off('value'); }catch(e){} }
+    const ref = fbdb.ref('users/'+MY_UID+'/profile');
+    profileListenerRef = ref;
+    let first = true;
+    ref.on('value', async function(snap){
+      if(first){ first = false; return; }
+      const remote = snap.exists() ? snap.val() : null;
+      const acc = currentAccount();
+      if(!remote || !acc) return;
+      if(canonProfile(remote) === lastSavedProfileJson) return; // echo of my own save
+      const mine = acc.myGroups;
+      Object.keys(acc).forEach(k => { delete acc[k]; });
+      Object.assign(acc, fillProfileDefaults(remote), { id: MY_UID, myGroups: mine });
+      lastSavedProfileJson = canonProfile(acc);
+      await syncOwnedGroups();
+      ensureBackgroundListeners();
+      renderAll();
+      try{ refreshRealMemberGroups(); }catch(e){}
+    });
   }
   async function processPendingInviteParam(){
     if(!pendingJoinParam) return;
@@ -1637,7 +1745,10 @@
   async function saveState(){
     if(!firebaseAvailable || !MY_UID) return;
     try{
-      await fbdb.ref('users/'+MY_UID+'/profile').set(fbSafe(state.profile) || null);
+      const toSave = state.profile ? fbSafe(state.profile) : null;
+      if(toSave) delete toSave.myGroups; // group docs live under groups/, never duplicated in the profile
+      lastSavedProfileJson = canonProfile(toSave);
+      await fbdb.ref('users/'+MY_UID+'/profile').set(toSave || null);
       if(state.profile && state.profile.name){
         try{ localStorage.setItem('team_app_last_name', state.profile.name); }catch(e){}
       }
@@ -1930,10 +2041,6 @@
     const isSelected = el.classList.toggle('selected');
     el.style.outline = isSelected ? '2.5px solid var(--pitch)' : 'none';
     el.style.boxShadow = isSelected ? '0 4px 14px rgba(23,64,43,0.25)' : '0 4px 10px rgba(13,35,23,0.06)';
-    if(el.dataset.sport === 'אחר'){
-      document.getElementById('onboard-other-wrap').style.display = isSelected ? 'block' : 'none';
-      if(!isSelected) document.getElementById('onboard-other-input').value = '';
-    }
   }
   function goToGenderStep(){
     const name = document.getElementById('onboard-name').value.trim();
@@ -1989,12 +2096,8 @@
   async function finishOnboarding(){
     const selected = Array.from(document.querySelectorAll('#onboard-sport-grid .sport-tile.selected'));
     if(!selected.length){ createdToast('בחרו לפחות ענף אחד'); return; }
-    const otherSelected = selected.some(t => t.dataset.sport === 'אחר');
-    const otherText = document.getElementById('onboard-other-input').value.trim();
-    if(otherSelected && !otherText){ createdToast('נא לציין איזה ענף'); return; }
-    let sports = selected.map(t => t.dataset.sport).filter(s => s !== 'אחר');
-    const otherSport = otherSelected ? otherText : '';
-    if(otherSport) sports.push(otherSport);
+    const sports = selected.map(t => t.dataset.sport);
+    const otherSport = '';
 
     const name = onboardData.name;
     state.profile = {
@@ -2085,6 +2188,10 @@
         t.style.outline = active ? '2.5px solid var(--pitch)' : 'none';
         t.style.boxShadow = active ? '0 4px 14px rgba(23,64,43,0.25)' : '0 4px 10px rgba(13,35,23,0.06)';
       });
+      const grid = document.getElementById('profile-sport-grid');
+      const moreBtn = grid.querySelector('.more-tile');
+      const needOpen = Array.from(grid.querySelectorAll('.extra-sport.selected')).length > 0;
+      if(moreBtn && needOpen !== (moreBtn.dataset.open === 'true')) toggleMoreSports(moreBtn);
     }
   }
   function saveProfileSports(){
@@ -2148,7 +2255,7 @@
     document.getElementById('cal-past').style.display = mode==='past' ? 'block' : 'none';
   }
   function toggleMoreSports(btn){
-    const grid = document.getElementById('search-sport-grid');
+    const grid = btn.closest('.sport-grid');
     const hidden = grid.querySelectorAll('.extra-sport');
     const isOpen = btn.dataset.open === 'true';
     hidden.forEach(t => t.style.display = isOpen ? 'none' : '');
@@ -2828,7 +2935,7 @@
     }
     const group = {
       id: newGroupCode(),
-      ownerId: acc.id,
+      ownerId: MY_UID || acc.id,
       ownerName: acc.name,
       ownerPhoto: acc.photo || null,
       sport, name, region, city,
@@ -2841,7 +2948,7 @@
       members: [],
       chat: []
     };
-    await saveGroup(group);
+    if(!(await saveGroup(group))) return;
     acc.myGroups.unshift(group);
     if(!acc.ownedGroupIds) acc.ownedGroupIds = [];
     acc.ownedGroupIds.unshift(group.id);
