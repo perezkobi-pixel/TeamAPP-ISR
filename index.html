@@ -522,6 +522,28 @@
     </div>
     <div class="scroll">
 
+      <span class="section-label">קבוצות שאני משתתף בהן</span>
+      <div id="mygroups-member-demo">
+        <div class="card" onclick="openGroupDetail(false)">
+          <div class="card-banner" style="background:linear-gradient(135deg,#B5501E,#5A2609);">
+            <span class="badge-sport">🎾 פאדל</span>
+            <span class="badge">פאדל בוקר · שרון</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span>📍 הרצליה</span>
+              <span>👥 9 חברים</span>
+              <span>חבר</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="mygroups-member-extra"></div>
+      <div id="mygroups-real-member-extra"></div>
+      <p id="mygroups-member-empty" style="display:none; text-align:center; color:var(--ink-soft); font-size:13px; padding:10px 20px 4px; line-height:1.6;">עדיין לא הצטרפת לאף קבוצה</p>
+
+      <div class="field-divider"></div>
+
       <span class="section-label">קבוצות שאני מנהל</span>
       <div id="mygroups-managed-demo">
         <div class="card" onclick="openGroupDetail(true)">
@@ -542,30 +564,8 @@
       <div id="my-managed-extra"></div>
       <div id="mygroups-managed-empty" style="display:none; text-align:center; padding:10px 20px 4px;">
         <p style="color:var(--ink-soft); font-size:13px; line-height:1.6; margin-bottom:12px;">עדיין לא הקמת אף קבוצה</p>
-        <button class="btn btn-primary" onclick="startNewGroup()">➕ יצירת קבוצה</button>
+        <button class="btn btn-ghost" onclick="startNewGroup()">➕ יצירת קבוצה</button>
       </div>
-
-      <div class="field-divider"></div>
-
-      <span class="section-label">קבוצות שאני משתתף בהן</span>
-      <div id="mygroups-member-demo">
-        <div class="card" onclick="openGroupDetail(false)">
-          <div class="card-banner" style="background:linear-gradient(135deg,#B5501E,#5A2609);">
-            <span class="badge-sport">🎾 פאדל</span>
-            <span class="badge">פאדל בוקר · שרון</span>
-          </div>
-          <div class="card-body">
-            <div class="card-meta">
-              <span>📍 הרצליה</span>
-              <span>👥 9 חברים</span>
-              <span>חבר</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="mygroups-member-extra"></div>
-      <div id="mygroups-real-member-extra"></div>
-      <p id="mygroups-member-empty" style="display:none; text-align:center; color:var(--ink-soft); font-size:13px; padding:10px 20px 4px; line-height:1.6;">עדיין לא הצטרפת לאף קבוצה</p>
 
       <div style="padding:6px 20px 20px;">
         <button class="btn btn-ghost" onclick="go('search')">🔍 חיפוש קבוצה חדשה</button>
@@ -743,6 +743,10 @@
 
       <div id="gp-main-content">
         <div class="field-divider"></div>
+        <div id="gp-desc-wrap" style="display:none;">
+          <span class="section-label">על הקבוצה</span>
+          <div class="card" style="cursor:default; box-shadow:none; border:1.5px solid var(--line);"><div class="card-body"><div id="gp-desc" style="font-size:13px; line-height:1.8; white-space:pre-wrap;"></div></div></div>
+        </div>
         <span class="section-label">תנאי הצטרפות שקבע מנהל הקבוצה</span>
         <div class="card" style="cursor:default; box-shadow:none; border:1.5px solid var(--line);">
           <div class="card-body">
@@ -864,14 +868,13 @@
 
       <div class="field" style="margin-bottom:8px;"><label>תנאי הצטרפות</label></div>
       <div class="tag-list" id="join-conditions">
-        <div class="tag-chip">מגורים באזור השרון <button onclick="this.parentElement.remove()">✕</button></div>
-        <div class="tag-chip">אישור נוכחות סדיר <button onclick="this.parentElement.remove()">✕</button></div>
       </div>
       <div class="add-announce-row" style="display:flex; padding:0 20px 14px;">
         <input id="new-condition-input" placeholder="הוסיפו תנאי הצטרפות..." onkeydown="if(event.key==='Enter'){event.preventDefault(); addJoinCondition();}">
         <button onclick="addJoinCondition()">הוספה</button>
       </div>
 
+      <div style="padding:0 20px 14px; margin-top:-8px; font-size:11px; color:var(--ink-soft);">לדוגמה: נוכחות של מפגש אחד בשבוע חובה!</div>
       <div class="field"><label>תיאור הקבוצה</label><textarea id="cg-desc" rows="3" placeholder="ספרו על הקבוצה, רמת המשחק, אווירה..."></textarea></div>
 
       <div style="padding:10px 20px 24px;">
@@ -978,7 +981,8 @@
     </div>
     <div class="scroll" style="margin-top:-16px;">
       <div class="stat-row" style="margin-top:10px;">
-        <div class="stat-box" style="flex:0 0 100%;"><div class="num" id="profile-meetings-count">48</div><div class="lbl">סה"כ מפגשים</div></div>
+        <div class="stat-box"><div class="num" id="profile-groups-count">0</div><div class="lbl">סה"כ קבוצות</div></div>
+        <div class="stat-box"><div class="num" id="profile-meetings-count">48</div><div class="lbl">סה"כ מפגשים</div></div>
       </div>
 
       <span class="section-label">ענפי ספורט מועדפים</span>
@@ -1206,20 +1210,52 @@
     activeGroupListenerRef = ref;
     activeGroupListenerCallback = callback;
   }
+  function normalizeGroup(g){
+    ['conditions','games','pendingRequests','members','chat'].forEach(k=>{ if(!g[k]) g[k] = []; });
+    (g.games||[]).forEach(gm=>{ if(!gm.confirmedIds) gm.confirmedIds = []; if(!gm.declinedIds) gm.declinedIds = []; });
+    return g;
+  }
+  function replaceGroupContents(localG, fresh){
+    Object.keys(localG).forEach(k=>{ delete localG[k]; });
+    Object.assign(localG, normalizeGroup(fresh));
+  }
   function startGroupRealtimeSync(id, mode){
     attachGroupListener(id, function(fresh){
       if(!fresh) return;
       const acc = currentAccount();
       if(mode === 'owner' && acc){
         const localG = acc.myGroups.find(x=>x.id===id);
-        if(localG) Object.assign(localG, fresh);
+        if(localG) replaceGroupContents(localG, fresh);
       }
       const ctx = getCurrentGroupContext();
-      if(ctx && ctx.id === id) renderGroupPreviewButton();
+      if(ctx && ctx.id === id){ setGroupDesc(fresh.desc); renderGroupPreviewButton(); }
       if(currentChatContext && (currentChatContext.groupId === id)){
         currentChatSharedGroup = fresh;
         renderChat();
       }
+    });
+  }
+  // background listeners: keep home/calendar/counts live for every group the user owns or belongs to
+  const bgGroupListeners = {};
+  function ensureBackgroundListeners(){
+    const acc = currentAccount();
+    if(!acc || !fbdb) return;
+    const ids = new Set([].concat((acc.myGroups||[]).map(g=>g.id), acc.ownedGroupIds||[], acc.pendingRealRequests||[]));
+    ids.forEach(id => {
+      if(!id || bgGroupListeners[id]) return;
+      let first = true;
+      const ref = fbdb.ref('groups/'+id);
+      const cb = function(snap){
+        if(first){ first = false; return; }
+        const fresh = snap.exists() ? snap.val() : null;
+        if(!fresh) return;
+        const a = currentAccount();
+        const localG = a && a.myGroups.find(x=>x.id===id);
+        if(localG){ replaceGroupContents(localG, fresh); renderAll(); }
+        else refreshRealMemberGroups();
+      };
+      ref.on('value', cb);
+      bgGroupListeners[id] = { ref, cb };
     });
   }
   async function saveGroup(g){
@@ -1496,6 +1532,7 @@
     const ids = acc.pendingRealRequests || [];
     realMemberGamesCache = [];
     hasAnyRealMembership = false;
+    realMemberGroupCount = 0;
     if(!ids.length){
       if(wrap) wrap.innerHTML = '';
       renderAll();
@@ -1511,6 +1548,7 @@
       const stillWaiting = (g.pendingRequests||[]).some(r=>r.requesterId===acc.id);
       if(isMemberNow){
         hasAnyRealMembership = true;
+        if(g.ownerId !== acc.id) realMemberGroupCount++;
         sortedGames(g).forEach(gm => {
           if(!(gm.confirmedIds||[]).includes(acc.id)) return; // calendar/home show only confirmed attendance
           const dt = new Date(gm.date+'T'+gm.time);
@@ -1542,6 +1580,12 @@
     }
     renderAll();
   }
+  function setGroupDesc(desc){
+    const w=document.getElementById('gp-desc-wrap'), d=document.getElementById('gp-desc');
+    if(!w||!d) return;
+    d.textContent = desc || '';
+    w.style.display = desc ? 'block' : 'none';
+  }
   function openRealMemberView(id){
     loadGroup(id).then(g => {
       if(!g) return;
@@ -1561,6 +1605,7 @@
         ? conditions.map(c=>'✅ '+c).join('<br>')
         : 'אין תנאי סף מיוחדים — כולם מוזמנים 🙌';
       document.getElementById('gp-level').textContent = g.level || 'הכל';
+      setGroupDesc(g.desc);
       go('groupPreview');
       renderGroupPreviewButton();
       startGroupRealtimeSync(id, 'member');
@@ -2064,6 +2109,7 @@
       ? conditions.map(c=>'✅ '+c).join('<br>')
       : 'אין תנאי סף מיוחדים — כולם מוזמנים 🙌';
     document.getElementById('gp-level').textContent = 'הכל';
+    setGroupDesc('');
     go('groupPreview');
     renderGroupPreviewButton();
   }
@@ -2156,6 +2202,7 @@
       ? conditions.map(c=>'✅ '+c).join('<br>')
       : 'אין תנאי סף מיוחדים — כולם מוזמנים 🙌';
     document.getElementById('gp-level').textContent = g.level || 'הכל';
+    setGroupDesc(g.desc);
     go('groupPreview');
     renderGroupPreviewButton();
     startGroupRealtimeSync(g.id, 'browse');
@@ -2209,6 +2256,7 @@
       ? conditions.map(c=>'✅ '+c).join('<br>')
       : 'אין תנאי סף מיוחדים — כולם מוזמנים 🙌';
     document.getElementById('gp-level').textContent = 'הכל';
+    setGroupDesc('');
     go('groupPreview');
     renderGroupPreviewButton();
   }
@@ -2494,9 +2542,7 @@
     document.getElementById('cg-sport').selectedIndex = 0;
     document.querySelectorAll('#cg-age-chips .chip').forEach((c,i)=>c.classList.toggle('active', i===0));
     document.querySelectorAll('#cg-level-chips .chip').forEach((c,i)=>c.classList.toggle('active', i===0));
-    document.getElementById('join-conditions').innerHTML =
-      '<div class="tag-chip">מגורים באזור השרון <button onclick="this.parentElement.remove()">✕</button></div>'
-      + '<div class="tag-chip">אישור נוכחות סדיר <button onclick="this.parentElement.remove()">✕</button></div>';
+    document.getElementById('join-conditions').innerHTML = '';
   }
   function openEditGroup(groupId){
     const acc = currentAccount();
@@ -2621,6 +2667,7 @@
       ? g.conditions.map(c=>'✅ '+c).join('<br>')
       : 'אין תנאי סף מיוחדים — כולם מוזמנים 🙌';
     document.getElementById('gp-level').textContent = g.level || 'הכל';
+    setGroupDesc(g.desc);
     go('groupPreview');
     renderGroupPreviewButton();
     startGroupRealtimeSync(id, 'owner');
@@ -2931,6 +2978,7 @@
   }
   let realMemberGamesCache = [];
   let hasAnyRealMembership = false;
+  let realMemberGroupCount = 0;
   function allCustomGames(){
     const acc = currentAccount();
     const out = [];
@@ -3236,6 +3284,8 @@
     const hasRealPending = !!(acc && acc.pendingRealRequests && acc.pendingRealRequests.length);
     if(mgMemberEmpty) mgMemberEmpty.style.display = (isMember || joinedKeys.length || hasRealPending) ? 'none' : 'block';
     // profile screen
+    const profGroupsCount = document.getElementById('profile-groups-count');
+    if(profGroupsCount) profGroupsCount.textContent = ((acc && acc.myGroups) ? acc.myGroups.length : 0) + realMemberGroupCount;
     const profMeetingsCount = document.getElementById('profile-meetings-count');
     if(profMeetingsCount) profMeetingsCount.textContent = isMember ? 48 : 0;
 
@@ -3243,6 +3293,7 @@
     renderMyGroups();
     renderGroupPreviewButton();
     if(acc) postLoginSetup();
+    ensureBackgroundListeners();
   }
 
   // init default tile selection styling on any screen containing sport tiles
