@@ -185,6 +185,8 @@
   .stat-row.four{ gap:6px; padding:0 14px 6px; }
   .stat-box.active-stat{ background:var(--orange); }
   .stat-box.active-stat .num, .stat-box.active-stat .lbl{ color:#fff; }
+  .stat-box.stat-box-hi{ background:var(--orange); }
+  .stat-box.stat-box-hi .num, .stat-box.stat-box-hi .lbl{ color:#fff; }
   .city-suggestions{ display:none; margin-top:6px; max-height:220px; overflow-y:auto; border:1.5px solid var(--line); border-radius:12px; background:#fff; }
   .city-suggestion-item{ padding:10px 14px; font-size:13.5px; cursor:pointer; border-bottom:1px solid var(--line); }
   .city-suggestion-item:last-child{ border-bottom:none; }
@@ -216,7 +218,7 @@
   .pill-toggle button.active{ background:#fff; color:var(--pitch-dark); opacity:1; }
 
   /* chat */
-  .msg-row{ display:flex; padding:4px 16px; }
+  .msg-row{ display:flex; padding:4px 16px; gap:8px; align-items:flex-end; }
   .msg-row.me{ justify-content:flex-start; flex-direction:row-reverse; }
   .msg-bubble{
     max-width:72%; padding:10px 14px; border-radius:16px; font-size:13.5px; line-height:1.5; margin:4px 0;
@@ -247,6 +249,10 @@
   .sport-tile .emo{ font-size:22px; }
   .sport-tile .name{ font-size:10.5px; font-weight:700; margin-top:4px; color:var(--ink); }
   .back-btn{ background:none; border:none; color:#fff; font-size:18px; cursor:pointer; }
+  .hero .back-btn{
+    background:rgba(255,255,255,0.15); border-radius:100px; padding:8px 16px;
+    font-size:13px; font-weight:700; min-width:auto; min-height:auto;
+  }
   .modal-sheet-title{ padding:18px 20px 6px; }
   .about-text{ padding:0 20px; font-size:13.5px; line-height:1.75; color:var(--ink-soft); margin:0 0 20px; }
 
@@ -512,7 +518,7 @@
   <section class="screen" id="screen-myGroups">
     <div class="topbar">
       <div style="display:flex; align-items:center; gap:6px;"><img class="app-logo-img" style="width:22px; height:auto; flex-shrink:0;" alt="TEAM"><div><span class="kicker">כל הקבוצות</span><h1>הקבוצות שלי</h1></div></div>
-      <button class="avatar-btn" onclick="go('profile')" aria-label="הגדרות"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 008.6 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H2a2 2 0 010-4h.09A1.65 1.65 0 003.6 8.6a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H8a1.65 1.65 0 001-1.51V2a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V8c.36.51.94.85 1.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+      <div style="width:34px;"></div>
     </div>
     <div class="scroll">
 
@@ -534,7 +540,10 @@
       </div>
 
       <div id="my-managed-extra"></div>
-      <p id="mygroups-managed-empty" style="display:none; text-align:center; color:var(--ink-soft); font-size:13px; padding:10px 20px 4px; line-height:1.6;">עדיין לא הקמת אף קבוצה</p>
+      <div id="mygroups-managed-empty" style="display:none; text-align:center; padding:10px 20px 4px;">
+        <p style="color:var(--ink-soft); font-size:13px; line-height:1.6; margin-bottom:12px;">עדיין לא הקמת אף קבוצה</p>
+        <button class="btn btn-primary" onclick="startNewGroup()">➕ יצירת קבוצה</button>
+      </div>
 
       <div class="field-divider"></div>
 
@@ -720,7 +729,7 @@
       <span class="kicker" id="gp-breadcrumb" style="display:none;">הקבוצות שלי</span>
       <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
         <h1 style="font-size:26px; margin:0;" id="gp-name">הפועל הצפון</h1>
-        <span id="gp-owner-badge" style="display:none; background:rgba(255,255,255,0.18); border-radius:100px; padding:4px 10px; font-size:11.5px; font-weight:700;">👑 מנהל/ת</span>
+        <span id="gp-owner-badge" style="display:none; background:var(--yellow); color:var(--pitch-dark); border:none; outline:none; border-radius:100px; padding:4px 10px; font-size:11.5px; font-weight:800;">🌟 את/ה מנהל/ת</span>
       </div>
       <p id="gp-subtitle">כדורגל חמישיות · כפר סבא ⚽</p>
     </div>
@@ -875,7 +884,7 @@
   <section class="screen" id="screen-calendar">
     <div class="topbar">
       <div style="display:flex; align-items:center; gap:6px;"><img class="app-logo-img" style="width:22px; height:auto; flex-shrink:0;" alt="TEAM"><div><span class="kicker">כל הקבוצות שלך</span><h1>יומן</h1></div></div>
-      <button class="avatar-btn" style="width:34px;height:34px;" onclick="go('profile')" aria-label="הגדרות"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 008.6 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H2a2 2 0 010-4h.09A1.65 1.65 0 003.6 8.6a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H8a1.65 1.65 0 001-1.51V2a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V8c.36.51.94.85 1.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+      <div style="width:34px;"></div>
     </div>
     <div class="scroll">
       <div id="cal-content-wrap">
@@ -886,89 +895,11 @@
       <div class="field-divider"></div>
 
       <div id="cal-upcoming">
-        <div id="cal-custom-games-slot"></div>
-        <span class="section-label">חמישי, 17 ביולי</span>
-        <div id="cal-ev1-slot"></div>
-
-        <span class="section-label">שישי, 18 ביולי</span>
-        <div class="card">
-          <div class="card-body" style="display:flex; align-items:center; gap:14px; padding:14px 16px;">
-            <div style="text-align:center; min-width:44px;">
-              <div style="font-family:'Rubik'; font-weight:900; font-size:20px; color:var(--orange);">07:00</div>
-            </div>
-            <div style="flex:1;">
-              <div style="font-weight:700; font-size:14px;">🏃 ריצת בוקר בפארק</div>
-              <div class="card-meta" style="margin-top:4px;"><span>📍 פארק הירקון</span><span>👥 12/15</span></div>
-            </div>
-          </div>
-        </div>
-
-        <span class="section-label">ראשון, 20 ביולי</span>
-        <div class="card">
-          <div class="card-body" style="display:flex; align-items:center; gap:14px; padding:14px 16px;">
-            <div style="text-align:center; min-width:44px;">
-              <div style="font-family:'Rubik'; font-weight:900; font-size:20px; color:var(--pitch);">19:30</div>
-            </div>
-            <div style="flex:1;">
-              <div style="font-weight:700; font-size:14px;">🎾 פאדל בוקר · שרון</div>
-              <div class="card-meta" style="margin-top:4px;"><span>📍 מועדון פאדל הרצליה</span><span>👥 4/4 מלא</span></div>
-            </div>
-          </div>
-        </div>
-
-        <span class="section-label">חמישי, 24 ביולי</span>
-        <div class="card">
-          <div class="card-body" style="display:flex; align-items:center; gap:14px; padding:14px 16px;">
-            <div style="text-align:center; min-width:44px;">
-              <div style="font-family:'Rubik'; font-weight:900; font-size:20px; color:var(--pitch);">20:00</div>
-            </div>
-            <div style="flex:1;">
-              <div style="font-weight:700; font-size:14px;">⚽ הפועל הצפון · אימון קבוצתי</div>
-              <div class="card-meta" style="margin-top:4px;"><span>📍 מגרש עירוני, כפ״ס</span><span>👥 3/10</span></div>
-            </div>
-          </div>
-        </div>
+        <div id="cal-upcoming-slot"></div>
       </div>
 
       <div id="cal-past" style="display:none;">
-        <span class="section-label">חמישי, 10 ביולי</span>
-        <div class="card" style="opacity:0.75;">
-          <div class="card-body" style="display:flex; align-items:center; gap:14px; padding:14px 16px;">
-            <div style="text-align:center; min-width:44px;">
-              <div style="font-family:'Rubik'; font-weight:900; font-size:20px; color:var(--ink-soft);">20:00</div>
-            </div>
-            <div style="flex:1;">
-              <div style="font-weight:700; font-size:14px;">⚽ הפועל הצפון נגד הפועל דרום</div>
-              <div class="card-meta" style="margin-top:4px;"><span>📍 מגרש עירוני, כפ״ס</span><span>👥 9/10 הגיעו</span></div>
-            </div>
-          </div>
-        </div>
-
-        <span class="section-label">ראשון, 6 ביולי</span>
-        <div class="card" style="opacity:0.75;">
-          <div class="card-body" style="display:flex; align-items:center; gap:14px; padding:14px 16px;">
-            <div style="text-align:center; min-width:44px;">
-              <div style="font-family:'Rubik'; font-weight:900; font-size:20px; color:var(--ink-soft);">19:30</div>
-            </div>
-            <div style="flex:1;">
-              <div style="font-weight:700; font-size:14px;">🎾 פאדל בוקר · שרון</div>
-              <div class="card-meta" style="margin-top:4px;"><span>📍 מועדון פאדל הרצליה</span><span>👥 4/4 הגיעו</span></div>
-            </div>
-          </div>
-        </div>
-
-        <span class="section-label">חמישי, 3 ביולי</span>
-        <div class="card" style="opacity:0.75;">
-          <div class="card-body" style="display:flex; align-items:center; gap:14px; padding:14px 16px;">
-            <div style="text-align:center; min-width:44px;">
-              <div style="font-family:'Rubik'; font-weight:900; font-size:20px; color:var(--ink-soft);">20:00</div>
-            </div>
-            <div style="flex:1;">
-              <div style="font-weight:700; font-size:14px;">⚽ הפועל הצפון · אימון קבוצתי</div>
-              <div class="card-meta" style="margin-top:4px;"><span>📍 מגרש עירוני, כפ״ס</span><span>👥 7/10 הגיעו</span></div>
-            </div>
-          </div>
-        </div>
+        <div id="cal-past-slot"></div>
       </div>
       </div>
 
@@ -1037,14 +968,17 @@
   <section class="screen" id="screen-profile">
     <div class="hero" style="padding:calc(env(safe-area-inset-top,0px) + 40px) 20px 30px; text-align:center;">
       <button class="back-btn" style="position:absolute; top:calc(env(safe-area-inset-top,0px) + 40px); left:20px;" onclick="goBack()">→</button>
-      <div id="profile-avatar-circle" style="width:72px; height:72px; border-radius:50%; background:var(--orange); margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-family:'Rubik'; font-weight:900; font-size:26px;">דכ</div>
+      <label for="profile-photo-input" style="cursor:pointer; display:inline-block; position:relative;">
+        <div id="profile-avatar-circle" style="width:72px; height:72px; border-radius:50%; background:var(--orange); margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-family:'Rubik'; font-weight:900; font-size:26px; overflow:hidden;">דכ</div>
+        <div style="position:absolute; bottom:8px; left:-2px; width:26px; height:26px; border-radius:50%; background:var(--pitch); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; border:2px solid #fff;">📷</div>
+      </label>
+      <input type="file" id="profile-photo-input" accept="image/*" style="display:none;" onchange="handleProfilePhotoChange(event)">
       <h1 id="profile-name" style="font-size:22px;">דני כהן</h1>
       <p id="profile-city" style="font-size:12px;">כפר סבא · חבר מאז 2024</p>
     </div>
     <div class="scroll" style="margin-top:-16px;">
       <div class="stat-row" style="margin-top:10px;">
-        <div class="stat-box"><div class="num" id="profile-groups-count">3</div><div class="lbl">קבוצות</div></div>
-        <div class="stat-box"><div class="num" id="profile-meetings-count">48</div><div class="lbl">סה"כ מפגשים</div></div>
+        <div class="stat-box" style="flex:0 0 100%;"><div class="num" id="profile-meetings-count">48</div><div class="lbl">סה"כ מפגשים</div></div>
       </div>
 
       <span class="section-label">ענפי ספורט מועדפים</span>
@@ -1083,23 +1017,6 @@
         <div id="profile-city-suggestions" class="city-suggestions"></div>
         <div style="margin-top:10px;">
           <button class="btn btn-primary" onclick="saveProfileCity()">שמירת יישוב</button>
-        </div>
-      </div>
-
-      <div class="field-divider"></div>
-      <span class="section-label">הקבוצות שלי</span>
-      <div id="profile-demo-groups">
-        <div class="card" onclick="openGroupDetail(true)">
-          <div class="card-body" style="display:flex; align-items:center; gap:12px;">
-            <div style="width:40px;height:40px;border-radius:12px;background:var(--pitch);"></div>
-            <div><div style="font-weight:700; font-size:13.5px;">הפועל הצפון</div><div style="font-size:11.5px; color:var(--ink-soft);">👑 מנהל קבוצה</div></div>
-          </div>
-        </div>
-        <div class="card" onclick="openGroupDetail(false)">
-          <div class="card-body" style="display:flex; align-items:center; gap:12px;">
-            <div style="width:40px;height:40px;border-radius:12px;background:var(--orange);"></div>
-            <div><div style="font-weight:700; font-size:13.5px;">פאדל בוקר · שרון</div><div style="font-size:11.5px; color:var(--ink-soft);">חבר</div></div>
-          </div>
         </div>
       </div>
 
@@ -1169,6 +1086,14 @@
         <button class="btn btn-ghost" style="flex:1;" onclick="closeConfirmModal(false)">ביטול</button>
         <button class="btn btn-primary" id="confirm-modal-ok" style="flex:1; background:linear-gradient(145deg,#DC2626,#7F1D1D);" onclick="closeConfirmModal(true)">מחיקה</button>
       </div>
+    </div>
+  </div>
+
+  <div id="info-modal-overlay" style="display:none; position:absolute; inset:0; background:rgba(13,35,23,0.55); z-index:200; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:18px; padding:20px 20px 16px; max-width:320px; width:85%; max-height:70vh; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.25);">
+      <div id="info-modal-title" style="font-size:15px; font-weight:800; margin-bottom:12px; color:var(--ink);"></div>
+      <div id="info-modal-body" style="overflow-y:auto; font-size:13.5px; line-height:1.8; color:var(--ink);"></div>
+      <button class="btn btn-ghost" style="margin-top:14px;" onclick="closeInfoModal()">סגירה</button>
     </div>
   </div>
 
@@ -1352,30 +1277,45 @@
   let currentPreviewData = null;
   let currentOwnedGroupId = null;
   let onboardData = { name:'', gender:'', sports: [], otherSport: '', birthdate: null, city: '', photo: null };
-  function handleOnboardPhoto(evt){
-    const file = evt.target.files && evt.target.files[0];
-    if(!file) return;
-    if(!file.type.startsWith('image/')){ createdToast('נא לבחור קובץ תמונה'); return; }
+  function resizeImageToDataUrl(file, size, cb){
+    if(!file || !file.type.startsWith('image/')){ createdToast('נא לבחור קובץ תמונה'); return; }
     const reader = new FileReader();
     reader.onload = function(e){
       const img = new Image();
       img.onload = function(){
-        const size = 200;
         const canvas = document.createElement('canvas');
         canvas.width = size; canvas.height = size;
         const ctx = canvas.getContext('2d');
         const scale = Math.max(size / img.width, size / img.height);
         const w = img.width * scale, h = img.height * scale;
         ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        onboardData.photo = dataUrl;
-        const preview = document.getElementById('onboard-photo-preview');
-        preview.style.border = 'none';
-        preview.innerHTML = '<img src="'+dataUrl+'" style="width:100%; height:100%; object-fit:cover;">';
+        cb(canvas.toDataURL('image/jpeg', 0.8));
       };
       img.src = e.target.result;
     };
     reader.readAsDataURL(file);
+  }
+  function handleOnboardPhoto(evt){
+    const file = evt.target.files && evt.target.files[0];
+    if(!file) return;
+    resizeImageToDataUrl(file, 200, function(dataUrl){
+      onboardData.photo = dataUrl;
+      const preview = document.getElementById('onboard-photo-preview');
+      preview.style.border = 'none';
+      preview.innerHTML = '<img src="'+dataUrl+'" style="width:100%; height:100%; object-fit:cover;">';
+    });
+  }
+  function handleProfilePhotoChange(evt){
+    const file = evt.target.files && evt.target.files[0];
+    if(!file) return;
+    const acc = currentAccount();
+    if(!acc) return;
+    resizeImageToDataUrl(file, 200, function(dataUrl){
+      acc.photo = dataUrl;
+      updateAvatarInitials(acc.name, acc.photo);
+      saveState();
+      createdToast('תמונת הפרופיל עודכנה ✅');
+    });
   }
 
   function currentAccount(){
@@ -1572,6 +1512,7 @@
       if(isMemberNow){
         hasAnyRealMembership = true;
         sortedGames(g).forEach(gm => {
+          if(!(gm.confirmedIds||[]).includes(acc.id)) return; // calendar/home show only confirmed attendance
           const dt = new Date(gm.date+'T'+gm.time);
           if(!isNaN(dt.getTime())) realMemberGamesCache.push({ group:g, game:gm, dt });
         });
@@ -2050,7 +1991,7 @@
     g.pendingRequests.splice(idx,1);
     if(approve){
       g.memberCount = (g.memberCount || 1) + 1;
-      g.members.push({ id: req.requesterId || newId('mem'), name:req.name, role:'member' });
+      g.members.push({ id: req.requesterId || newId('mem'), name:req.name, role:'member', photo: req.photo || null });
     }
     await saveGroup(g);
     const localG = acc.myGroups.find(x=>x.id===groupId);
@@ -2227,7 +2168,7 @@
     if(!g.pendingRequests) g.pendingRequests = [];
     if(g.pendingRequests.find(r=>r.requesterId===acc.id)){ createdToast('כבר שלחת בקשה לקבוצה זו'); return; }
     const meta = [acc.city, (acc.sports||[]).join(', ')].filter(Boolean).join(' · ');
-    g.pendingRequests.push({ id:newId('r'), requesterId: acc.id, name: acc.name, meta: meta || 'מבקש/ת להצטרף' });
+    g.pendingRequests.push({ id:newId('r'), requesterId: acc.id, name: acc.name, photo: acc.photo || null, meta: meta || 'מבקש/ת להצטרף' });
     await saveGroup(g);
     if(!acc.pendingRealRequests) acc.pendingRealRequests = [];
     if(!acc.pendingRealRequests.includes(currentRealGroupId)) acc.pendingRealRequests.push(currentRealGroupId);
@@ -2290,15 +2231,22 @@
         let html = '<div class="card" style="cursor:default; box-shadow:none; border:1px solid var(--line); margin-bottom:8px;"><div class="card-body">'
           + '<div style="display:flex; justify-content:space-between; align-items:flex-start;">'
           + '<div><div style="font-weight:700; font-size:13.5px;">'+formatGameDate(gm.date)+' · '+gm.time+'</div>'
-          + '<div class="card-meta" style="margin-top:4px;"><span>📍 '+gm.address+'</span><span>👥 '+count+'/'+gm.capacity+' אישרו</span></div>'
+          + '<div class="card-meta" style="margin-top:4px;">'
+          + '<span onclick="openWaze(\''+(gm.address||'').replace(/'/g,'')+'\')" style="cursor:pointer; text-decoration:underline;">📍 '+gm.address+'</span>'
+          + '<span onclick="showConfirmedMembersModal(\''+g.id+'\',\''+gm.id+'\')" style="cursor:pointer; text-decoration:underline;">👥 '+count+'/'+gm.capacity+' אישרו</span>'
+          + '</div>'
           + (gm.notes ? '<div style="font-size:11.5px; color:var(--ink-soft); margin-top:4px;">'+gm.notes+'</div>' : '')
           + '</div>';
         if(mode === 'owner'){
           html += '<button class="link-btn" style="padding:0; font-size:11.5px;" onclick="editGame(\''+gm.id+'\')">✎ עריכה</button></div></div></div>';
         } else {
           const isIn = (gm.confirmedIds||[]).includes(acc && acc.id);
+          const isOut = (gm.declinedIds||[]).includes(acc && acc.id);
           html += '</div>'
-            + '<button class="btn '+(isIn?'btn-ghost':'btn-primary')+'" style="margin-top:8px; font-size:13px;" onclick="toggleGameRSVP(\''+g.id+'\',\''+gm.id+'\')">'+(isIn ? '❌ ביטול הגעה' : '✅ אני מגיע/ה')+'</button>'
+            + '<div style="display:flex; gap:8px; margin-top:8px;">'
+            + '<button class="btn" style="flex:1; font-size:13px; padding:10px;'+(isIn ? ' background:var(--orange); color:#fff;' : ' background:var(--card); color:var(--ink); border:1.5px solid var(--line);')+'" onclick="setGameRSVP(\''+g.id+'\',\''+gm.id+'\',true)">מגיע</button>'
+            + '<button class="btn" style="flex:1; font-size:13px; padding:10px;'+(isOut ? ' background:var(--orange); color:#fff;' : ' background:var(--card); color:var(--ink); border:1.5px solid var(--line);')+'" onclick="setGameRSVP(\''+g.id+'\',\''+gm.id+'\',false)">לא מגיע</button>'
+            + '</div>'
             + '</div></div>';
         }
         return html;
@@ -2314,16 +2262,25 @@
     if(currentRealGroupId) return { id: currentRealGroupId, mode: 'browse' };
     return null;
   }
-  async function toggleGameRSVP(groupId, gameId){
+  async function setGameRSVP(groupId, gameId, attending){
     const g = await loadGroup(groupId);
     if(!g){ createdToast('הקבוצה לא נמצאה'); return; }
     const gm = (g.games||[]).find(x=>x.id===gameId);
     if(!gm) return;
     if(!gm.confirmedIds) gm.confirmedIds = [];
+    if(!gm.declinedIds) gm.declinedIds = [];
     const acc = currentAccount();
-    const idx = gm.confirmedIds.indexOf(acc.id);
-    if(idx === -1){ gm.confirmedIds.push(acc.id); createdToast('אישרת הגעה למשחק ✅'); }
-    else { gm.confirmedIds.splice(idx,1); createdToast('ביטלת את ההגעה למשחק'); }
+    const inConfirmed = gm.confirmedIds.indexOf(acc.id);
+    const inDeclined = gm.declinedIds.indexOf(acc.id);
+    if(attending){
+      if(inDeclined !== -1) gm.declinedIds.splice(inDeclined,1);
+      if(inConfirmed === -1) gm.confirmedIds.push(acc.id);
+      createdToast('אישרת הגעה למשחק ✅');
+    } else {
+      if(inConfirmed !== -1) gm.confirmedIds.splice(inConfirmed,1);
+      if(inDeclined === -1) gm.declinedIds.push(acc.id);
+      createdToast('סימנת שלא מגיע/ה למשחק');
+    }
     await saveGroup(g);
     const ctx = getCurrentGroupContext();
     if(ctx && ctx.id === groupId) renderGpGamesSection(g, ctx.mode);
@@ -2603,6 +2560,7 @@
       id: newGroupCode(),
       ownerId: acc.id,
       ownerName: acc.name,
+      ownerPhoto: acc.photo || null,
       sport, name, region, city,
       maxMembers: max,
       memberCount: 1,
@@ -2688,7 +2646,7 @@
     const id = currentOwnedGroupId;
     showActionSheet([
       { label: '✎ עריכת קבוצה', onClick: function(){ openEditGroup(id); } },
-      { label: '🗑 מחיקת קבוצה', danger: true, onClick: function(){ confirmDeleteMyGroup(id); } }
+      { label: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-left:4px;"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>מחיקת קבוצה', danger: true, onClick: function(){ confirmDeleteMyGroup(id); } }
     ]);
   }
   let gpCornerIconMode = null;
@@ -2726,6 +2684,36 @@
     const cb = confirmModalCallback;
     confirmModalCallback = null;
     if(confirmed && cb) cb();
+  }
+  function showInfoModal(title, bodyHtml){
+    document.getElementById('info-modal-title').textContent = title;
+    document.getElementById('info-modal-body').innerHTML = bodyHtml;
+    document.getElementById('info-modal-overlay').style.display = 'flex';
+  }
+  function closeInfoModal(){
+    document.getElementById('info-modal-overlay').style.display = 'none';
+  }
+  function getMemberNameById(g, id){
+    if(!g || !id) return 'משתמש/ת';
+    if(g.ownerId === id) return (g.ownerName || 'מנהל/ת הקבוצה') + ' 👑';
+    const m = (g.members||[]).find(x=>x.id===id);
+    return m ? m.name : 'משתמש/ת';
+  }
+  function openWaze(address){
+    if(!address) return;
+    window.open('https://waze.com/ul?q='+encodeURIComponent(address), '_blank');
+  }
+  async function showConfirmedMembersModal(groupId, gameId){
+    const g = await loadGroup(groupId);
+    if(!g){ createdToast('הקבוצה לא נמצאה'); return; }
+    const gm = (g.games||[]).find(x=>x.id===gameId);
+    if(!gm){ createdToast('המשחק לא נמצא'); return; }
+    const ids = gm.confirmedIds || [];
+    const names = ids.map(id => getMemberNameById(g, id));
+    const body = names.length
+      ? names.map(n => '<div style="padding:7px 0; border-bottom:1px solid var(--line);">✅ '+n+'</div>').join('')
+      : '<div style="text-align:center; color:var(--ink-soft); padding:10px 0;">עדיין אין מי שאישר הגעה</div>';
+    showInfoModal('מי מגיע למשחק ('+names.length+'/'+gm.capacity+')', body);
   }
   function confirmDeleteMyGroup(id){
     const acc = currentAccount();
@@ -2902,17 +2890,27 @@
     goBack();
     renderAll();
   }
-  function customGameCardHTML(g, gm){
+  function customGameCardHTML(g, gm, isFirst){
     const dayLabel = formatGameDate(gm.date);
+    const weekday = dayLabel.split(', ')[0] || dayLabel;
+    const dateNum = dayLabel.split(', ')[1] || '';
     const acc = currentAccount();
     const isOwner = acc && g.ownerId === acc.id;
     const navCall = isOwner ? "openMyGroupPreview('"+g.id+"')" : "openRealMemberView('"+g.id+"')";
-    return '<div class="card" onclick="'+navCall+'">'
-      + '<div class="card-body">'
-      + '<div style="font-weight:800; font-size:15px; color:var(--pitch-dark);">'+dayLabel+' · '+gm.time+'</div>'
-      + '<div style="font-size:12px; color:var(--ink-soft); margin-top:2px;">🏅 '+g.name+'</div>'
-      + '<div class="card-meta" style="margin-top:6px;"><span>📍 '+gm.address+'</span><span>👥 '+gameConfirmedCount(gm)+'/'+gm.capacity+' אישרו</span></div>'
-      + '</div></div>';
+    return '<div class="card" onclick="'+navCall+'"'+(isFirst ? ' style="position:relative;"' : '')+'>'
+      + (isFirst ? '<div style="height:4px; background:var(--orange);"></div>' : '')
+      + '<div class="card-body" style="display:flex; align-items:center; gap:14px; padding:14px 16px;">'
+      + '<div style="flex:1; min-width:0;">'
+      + '<div style="font-weight:700; font-size:14px;">'+(SPORT_EMOJI[g.sport]||'🏅')+' '+g.name+'</div>'
+      + '<div class="card-meta" style="margin-top:4px;">'
+      + '<span onclick="event.stopPropagation(); openWaze(\''+(gm.address||'').replace(/'/g,'')+'\')" style="cursor:pointer; text-decoration:underline;">📍 '+gm.address+'</span>'
+      + '<span onclick="event.stopPropagation(); showConfirmedMembersModal(\''+g.id+'\',\''+gm.id+'\')" style="cursor:pointer; text-decoration:underline;">👥 '+gameConfirmedCount(gm)+'/'+gm.capacity+' אישרו</span>'
+      + '</div>'
+      + '</div>'
+      + '<div style="text-align:center; min-width:56px; flex-shrink:0;">'
+      + '<div style="font-family:\'Rubik\'; font-weight:900; font-size:19px; color:'+(isFirst ? 'var(--orange)' : 'var(--pitch-dark)')+';">'+gm.time+'</div>'
+      + '<div style="font-size:10.5px; color:var(--ink-soft); font-weight:600; margin-top:1px;">'+weekday+(dateNum?', '+dateNum:'')+'</div>'
+      + '</div></div></div>';
   }
   function sortedGames(g){
     if(!g || !g.games) return [];
@@ -2933,7 +2931,7 @@
   }
   let realMemberGamesCache = [];
   let hasAnyRealMembership = false;
-  function allUpcomingCustomGames(){
+  function allCustomGames(){
     const acc = currentAccount();
     const out = [];
     if(acc && acc.myGroups){
@@ -2947,6 +2945,49 @@
     out.push(...realMemberGamesCache);
     out.sort((a,b) => a.dt - b.dt);
     return out;
+  }
+  function allUpcomingCustomGames(){
+    const now = new Date();
+    return allCustomGames().filter(x => x.dt >= now);
+  }
+  function formatCalDayHeader(dateStr){
+    if(!dateStr) return '';
+    const d = new Date(dateStr+'T00:00:00');
+    if(isNaN(d.getTime())) return dateStr;
+    return WEEKDAY_NAMES[d.getDay()] + ', ' + d.getDate() + ' ב' + MONTH_NAMES[d.getMonth()];
+  }
+  function groupGamesByDate(list){
+    const map = {}; const order = [];
+    list.forEach(x => {
+      const key = x.game.date;
+      if(!map[key]){ map[key] = []; order.push(key); }
+      map[key].push(x);
+    });
+    return order.map(key => ({ date:key, items: map[key] }));
+  }
+  function renderCalendarEvents(){
+    const now = new Date();
+    const all = allCustomGames();
+    const upcoming = all.filter(x => x.dt >= now);
+    const past = all.filter(x => x.dt < now).slice().sort((a,b) => b.dt - a.dt);
+    const upcomingSlot = document.getElementById('cal-upcoming-slot');
+    const pastSlot = document.getElementById('cal-past-slot');
+    if(upcomingSlot){
+      upcomingSlot.innerHTML = upcoming.length
+        ? groupGamesByDate(upcoming).map(grp =>
+            '<span class="section-label">'+formatCalDayHeader(grp.date)+'</span>'
+            + grp.items.map(x => customGameCardHTML(x.group, x.game, false)).join('')
+          ).join('')
+        : '<p style="text-align:center; font-size:12.5px; color:var(--ink-soft); padding:30px 24px;">אין לך אירועים קרובים</p>';
+    }
+    if(pastSlot){
+      pastSlot.innerHTML = past.length
+        ? groupGamesByDate(past).map(grp =>
+            '<span class="section-label">'+formatCalDayHeader(grp.date)+'</span>'
+            + grp.items.map(x => customGameCardHTML(x.group, x.game, false)).join('')
+          ).join('')
+        : '<p style="text-align:center; font-size:12.5px; color:var(--ink-soft); padding:30px 24px;">אין עדיין אירועים שהיו</p>';
+    }
   }
   async function inviteToGroup(id){
     const acc = currentAccount();
@@ -3047,10 +3088,20 @@
     }
     wrap.innerHTML = chat.map(m => {
       const isMe = m.senderId !== undefined ? (m.senderId === (acc && acc.id)) : !!m.me;
-      const senderLabel = m.senderId !== undefined ? (isMe ? null : m.senderName) : m.sender;
+      const senderLabel = m.senderId !== undefined ? (isMe ? (acc && acc.name) || 'את/ה' : m.senderName) : (m.sender || (acc && acc.name) || 'את/ה');
+      const initials = (senderLabel || '').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('');
+      const avatarColor = isMe ? 'var(--pitch)' : 'var(--orange)';
+      let photo = null;
+      if(isMe){ photo = acc && acc.photo; }
+      else if(m.senderId !== undefined && currentChatSharedGroup){
+        if(currentChatSharedGroup.ownerId === m.senderId) photo = currentChatSharedGroup.ownerPhoto;
+        else { const mm = (currentChatSharedGroup.members||[]).find(x=>x.id===m.senderId); if(mm) photo = mm.photo; }
+      }
+      const avatarInner = photo ? '<img src="'+photo+'" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">' : initials;
+      const avatar = '<div style="width:34px; height:34px; border-radius:50%; background:'+avatarColor+'; color:#fff; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">'+avatarInner+'</div>';
       const bubble = '<div class="msg-bubble"></div>';
-      if(isMe) return '<div class="msg-row me">'+bubble+'</div>';
-      return '<div class="msg-row"><div>'+(senderLabel ? '<div class="msg-sender">'+senderLabel+'</div>' : '')+bubble+'</div></div>';
+      if(isMe) return '<div class="msg-row me">'+avatar+bubble+'</div>';
+      return '<div class="msg-row">'+avatar+'<div>'+(senderLabel ? '<div class="msg-sender">'+senderLabel+'</div>' : '')+bubble+'</div></div>';
     }).join('');
     const bubbles = wrap.querySelectorAll('.msg-bubble');
     chat.forEach((m,i)=>{ bubbles[i].textContent = m.text; });
@@ -3139,7 +3190,7 @@
     const upcomingCustom = allUpcomingCustomGames();
     const hasCustomGames = upcomingCustom.length > 0;
     if(homeCustomGamesSlot){
-      homeCustomGamesSlot.innerHTML = upcomingCustom.map(x => customGameCardHTML(x.group, x.game)).join('');
+      homeCustomGamesSlot.innerHTML = upcomingCustom.map((x,i) => customGameCardHTML(x.group, x.game, i===0)).join('');
     }
     if(homeGamesWrap) homeGamesWrap.style.display = isMember ? 'block' : 'none';
     if(homeCustomGamesWrap) homeCustomGamesWrap.style.display = hasCustomGames ? 'block' : 'none';
@@ -3147,16 +3198,14 @@
     // home recommendations, matched to the sports the user picked at onboarding
     renderHomeRecommendations(acc);
     renderHomeGreeting(acc);
-    // calendar
-    const calSlot = document.getElementById('cal-ev1-slot');
-    if(calSlot) calSlot.innerHTML = eventCardHTML('hapoel','ev1', g.events.ev1, null);
-    const calCustomSlot = document.getElementById('cal-custom-games-slot');
-    if(calCustomSlot) calCustomSlot.innerHTML = upcomingCustom.map(x => customGameCardHTML(x.group, x.game)).join('');
+    // calendar — only real events the user created or confirmed attendance to
+    renderCalendarEvents();
+    const hasAnyCalendarContent = allCustomGames().length > 0;
     const calContentWrap = document.getElementById('cal-content-wrap');
     const calEmptyCta = document.getElementById('cal-empty-cta');
     if(calContentWrap && calEmptyCta){
-      calContentWrap.style.display = (isMember || hasCustomGames || hasAnyRealMembership) ? 'block' : 'none';
-      calEmptyCta.style.display = (isMember || hasCustomGames || hasAnyRealMembership) ? 'none' : 'block';
+      calContentWrap.style.display = hasAnyCalendarContent ? 'block' : 'none';
+      calEmptyCta.style.display = hasAnyCalendarContent ? 'none' : 'block';
     }
     // myGroups screen
     const mgManagedDemo = document.getElementById('mygroups-managed-demo');
@@ -3187,11 +3236,7 @@
     const hasRealPending = !!(acc && acc.pendingRealRequests && acc.pendingRealRequests.length);
     if(mgMemberEmpty) mgMemberEmpty.style.display = (isMember || joinedKeys.length || hasRealPending) ? 'none' : 'block';
     // profile screen
-    const profDemoGroups = document.getElementById('profile-demo-groups');
-    if(profDemoGroups) profDemoGroups.style.display = isMember ? 'block' : 'none';
-    const profGroupsCount = document.getElementById('profile-groups-count');
     const profMeetingsCount = document.getElementById('profile-meetings-count');
-    if(profGroupsCount) profGroupsCount.textContent = (isMember ? 2 : 0) + (acc ? acc.myGroups.length : 0);
     if(profMeetingsCount) profMeetingsCount.textContent = isMember ? 48 : 0;
 
     renderChat();
