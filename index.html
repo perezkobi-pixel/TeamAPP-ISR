@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800;900&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <style>
   :root{
     --pitch-dark:#0D2318;
@@ -326,8 +327,25 @@
           <div style="font-family:'Rubik'; font-weight:900; font-size:32px; color:var(--pitch-dark); letter-spacing:0.03em; margin-bottom:22px;">TEAM<span style="color:var(--orange);">APP</span></div>
           <h1 style="font-size:28px; line-height:1.25;">ברוכים הבאים 👋<br>בואו נמצא לכם קבוצה.</h1>
           <p style="color:var(--ink-soft); font-size:14px; line-height:1.7; margin-top:10px; max-width:280px;">כמה שאלות קצרות, ואתם בפנים — קבוצות ספורט לפי הענף, הגיל והאזור שלכם.</p>
-          <div style="width:100%; max-width:320px; margin-top:34px;">
-            <button class="btn btn-primary" onclick="showOnboardStep(2)">המשך</button>
+          <div style="width:100%; max-width:320px; margin-top:26px;">
+            <label style="display:flex; gap:10px; align-items:flex-start; text-align:right; font-size:12.5px; line-height:1.6; color:var(--ink-soft); cursor:pointer; margin-bottom:16px;">
+              <input type="checkbox" id="consent-check" onchange="onConsentToggle(this)" style="margin-top:3px; width:18px; height:18px; flex-shrink:0; accent-color:var(--orange);">
+              <span>קראתי ואני מסכים/ה ל<a href="#" onclick="openPolicy(event)" style="color:var(--orange); font-weight:700;">תנאי השימוש ומדיניות הפרטיות</a></span>
+            </label>
+            <button class="btn btn-ghost" id="btn-google" onclick="signInGoogle()" style="display:flex; align-items:center; justify-content:center; gap:10px;">
+              <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 019.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 000 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>
+              המשך עם Google
+            </button>
+            <button class="btn btn-primary" id="btn-email-toggle" style="margin-top:10px;" onclick="toggleEmailForm()">✉️ כניסה עם אימייל</button>
+            <div id="email-form" style="display:none; margin-top:12px; text-align:right;">
+              <input type="email" id="auth-email" placeholder="אימייל" autocomplete="email" style="width:100%; border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; font-family:'Heebo'; font-size:16px; margin-bottom:8px; direction:ltr; text-align:left;">
+              <input type="password" id="auth-password" placeholder="סיסמה (לפחות 6 תווים)" autocomplete="current-password" style="width:100%; border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; font-family:'Heebo'; font-size:16px; margin-bottom:10px; direction:ltr; text-align:left;">
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-primary" style="flex:1; padding:12px;" onclick="signInEmail(false)">כניסה</button>
+                <button class="btn btn-ghost" style="flex:1; padding:12px;" onclick="signInEmail(true)">חשבון חדש</button>
+              </div>
+              <div style="text-align:center; margin-top:10px;"><button class="link-btn" style="padding:0; font-size:12px;" onclick="resetPassword()">שכחתי סיסמה</button></div>
+            </div>
           </div>
         </div>
       </div>
@@ -1021,6 +1039,13 @@
         </div>
       </div>
 
+      <div class="field-divider"></div>
+      <div style="padding:6px 20px 24px;">
+        <button class="btn btn-ghost" onclick="openPolicy()">📄 תנאי שימוש ומדיניות פרטיות</button>
+        <button class="btn btn-ghost" style="margin-top:10px;" onclick="signOutUser()">התנתקות</button>
+        <button class="btn btn-ghost" style="margin-top:10px; color:#DC2626; border-color:#FCA5A5;" onclick="confirmDeleteAccount()">מחיקת החשבון שלי</button>
+      </div>
+
     </div>
   </section>
 
@@ -1086,6 +1111,36 @@
       <div style="display:flex; gap:10px;">
         <button class="btn btn-ghost" style="flex:1;" onclick="closeConfirmModal(false)">ביטול</button>
         <button class="btn btn-primary" id="confirm-modal-ok" style="flex:1; background:linear-gradient(145deg,#DC2626,#7F1D1D);" onclick="closeConfirmModal(true)">מחיקה</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="policy-overlay" style="display:none; position:absolute; inset:0; background:rgba(13,35,23,0.6); z-index:300; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:18px; width:92%; max-width:420px; height:82%; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+      <div style="padding:16px 18px 10px; font-weight:800; font-size:16px; border-bottom:1px solid var(--line);">תנאי השימוש ומדיניות הפרטיות</div>
+      <div id="policy-scroll" onscroll="onPolicyScroll()" style="flex:1; overflow-y:auto; padding:14px 18px; font-size:13px; line-height:1.8; color:var(--ink);"><h3 style="font-size:14px; margin:0 0 6px;">חלק א׳ — תנאי שימוש</h3>
+<p><b>1. כללי.</b> TEAMAPP היא אפליקציה המאפשרת לאתר קבוצות ספורט מקומיות, להצטרף אליהן ולתאם משחקים. השימוש באפליקציה מותר למי שמלאו לו 18 שנים. השימוש מהווה הסכמה לתנאים אלה.</p>
+<p><b>2. חשבון.</b> עליך למסור פרטים נכונים ולשמור על סודיות אמצעי הכניסה לחשבונך. אתה אחראי לכל פעולה שנעשית בחשבונך.</p>
+<p><b>3. התנהגות ותוכן.</b> אסור להעלות או לשלוח תוכן פוגעני, מאיים, גזעני, מיני, מטעה או בלתי חוקי, להטריד משתמשים אחרים, להתחזות או לפרסם פרטים אישיים של אחרים. אנו רשאים להסיר תוכן, להשעות או למחוק חשבונות שמפרים כללים אלה.</p>
+<p><b>4. פעילות ספורטיבית.</b> המשחקים והמפגשים מאורגנים על ידי משתמשים, לא על ידינו. ההשתתפות היא באחריותך בלבד, כולל התאמה בריאותית ובטיחות. TEAMAPP אינה צד לפעילות, אינה מפקחת עליה ואינה אחראית לנזק או לפציעה שיגרמו בה. מומלץ להיוועץ ברופא לפני פעילות גופנית.</p>
+<p><b>5. מנהלי קבוצות.</b> מנהל קבוצה אחראי לתוכן הקבוצה ולניהולה, ורשאי לאשר או לדחות בקשות הצטרפות ולהסיר חברים.</p>
+<p><b>6. הגבלת אחריות.</b> השירות ניתן כמות שהוא (AS IS), ללא התחייבות לזמינות רציפה או לדיוק המידע. במידה המרבית המותרת בדין, איננו אחראים לנזקים עקיפים הנובעים מהשימוש.</p>
+<p><b>7. שינויים ודין חל.</b> אנו רשאים לעדכן את התנאים, ועדכון מהותי יוצג לך בהתחברות. על התנאים יחול הדין הישראלי, וסמכות השיפוט הבלעדית נתונה לבתי המשפט המוסמכים בישראל.</p>
+<h3 style="font-size:14px; margin:16px 0 6px;">חלק ב׳ — מדיניות פרטיות</h3>
+<p><b>1. איזה מידע אנו אוספים.</b> פרטי כניסה (כתובת אימייל או חשבון Google), שם, תמונת פרופיל (אופציונלי), מגדר, תאריך לידה, יישוב, ענפי ספורט מועדפים, וכן תוכן שאתה יוצר באפליקציה: קבוצות, משחקים, אישורי הגעה והודעות צ׳אט. איננו אוספים מיקום מדויק.</p>
+<p><b>2. למה אנו משתמשים במידע.</b> להפעלת השירות: הצגת קבוצות מתאימות לפי ענף, גיל ואזור, ניהול הצטרפות לקבוצות, תיאום משחקים ותקשורת בין חברי קבוצה, ולשיפור ואבטחת האפליקציה.</p>
+<p><b>3. מי רואה את המידע.</b> חברי קבוצה שאתה חבר בה רואים את שמך ותמונתך. מנהל קבוצה שביקשת להצטרף אליה רואה את שמך, תמונתך ויישובך. תאריך הלידה והמגדר שלך אינם מוצגים למשתמשים אחרים (המגדר משמש להתאמת הטקסט בלבד, והגיל לבדיקת הגבלת הגיל). איננו מוכרים מידע אישי לצדדים שלישיים.</p>
+<p><b>4. אחסון ואבטחה.</b> המידע נשמר בשירותי Google Firebase, שעשויים לפעול בשרתים מחוץ לישראל. אנו נוקטים אמצעי אבטחה סבירים, אך אין מערכת חסינה לחלוטין.</p>
+<p><b>5. שמירה ומחיקה.</b> המידע נשמר כל עוד חשבונך פעיל. תוכל למחוק את חשבונך בכל עת ממסך ההגדרות (פרופיל). המחיקה מסירה את הפרופיל שלך, את הקבוצות שניהלת, את חברותך בקבוצות ואת אישורי ההגעה שלך. הודעות צ׳אט שכתבת בקבוצות של אחרים עשויות להישאר בקבוצות אלה.</p>
+<p><b>6. הזכויות שלך.</b> אתה רשאי לעיין במידע שנשמר עליך, לתקן אותו (מסך הפרופיל) ולבקש את מחיקתו, בהתאם לחוק הגנת הפרטיות, התשמ״א-1981.</p>
+<p><b>7. עוגיות ואחסון מקומי.</b> האפליקציה משתמשת באחסון מקומי במכשיר לצורך שמירת ההתחברות והעדפות.</p>
+<p><b>8. שינויים.</b> נעדכן מדיניות זו מעת לעת, ועדכון מהותי יוצג לך בהתחברות.</p>
+<p id="policy-contact"></p>
+<p style="text-align:center; color:var(--ink-soft); margin-top:14px;">— סוף המסמך —</p></div>
+      <div style="padding:12px 18px 16px; border-top:1px solid var(--line);">
+        <div id="policy-hint" style="font-size:11.5px; color:var(--ink-soft); text-align:center; margin-bottom:8px;">יש לגלול עד סוף המסמך כדי לאשר</div>
+        <button class="btn btn-primary" id="policy-accept-btn" disabled style="opacity:0.45;" onclick="acceptPolicy()">קראתי ואני מסכים/ה</button>
+        <button class="btn btn-ghost" style="margin-top:8px;" onclick="closePolicy()">סגירה</button>
       </div>
     </div>
   </div>
@@ -1166,16 +1221,173 @@
   }catch(e){ console.error('Firebase init failed', e); }
 
   let MY_UID = null;
-  function getLocalUid(){
+  const CONTACT_EMAIL = ''; // TODO: כתובת אימייל ליצירת קשר/תמיכה (תוצג במדיניות הפרטיות)
+  const CONSENT_VERSION = 1;
+  let consentRecord = null;
+  let policyRead = false;
+  function authErrorText(e){
+    const c = (e && e.code) || '';
+    const map = {
+      'auth/invalid-email':'כתובת האימייל לא תקינה',
+      'auth/missing-password':'נא להקליד סיסמה',
+      'auth/weak-password':'הסיסמה חלשה — לפחות 6 תווים',
+      'auth/email-already-in-use':'כבר קיים חשבון עם האימייל הזה — נסו להתחבר',
+      'auth/user-not-found':'לא נמצא חשבון עם האימייל הזה',
+      'auth/wrong-password':'סיסמה שגויה',
+      'auth/invalid-credential':'אימייל או סיסמה שגויים',
+      'auth/too-many-requests':'יותר מדי ניסיונות — נסו שוב מאוחר יותר',
+      'auth/network-request-failed':'אין חיבור לאינטרנט',
+      'auth/popup-closed-by-user':'ההתחברות בוטלה',
+      'auth/cancelled-popup-request':'ההתחברות בוטלה',
+      'auth/operation-not-allowed':'שיטת ההתחברות לא מופעלת ב-Firebase',
+      'auth/unauthorized-domain':'הדומיין לא מורשה ב-Firebase (Authentication ← Settings ← Authorized domains)'
+    };
+    return map[c] || ('שגיאת התחברות' + (c ? ' ('+c+')' : ''));
+  }
+  function openPolicy(ev){
+    if(ev) ev.preventDefault();
+    const pc = document.getElementById('policy-contact');
+    if(pc) pc.innerHTML = CONTACT_EMAIL ? '<b>יצירת קשר.</b> לשאלות, בקשות מחיקה או תלונות: '+CONTACT_EMAIL : '';
+    document.getElementById('policy-overlay').style.display = 'flex';
+    const sc = document.getElementById('policy-scroll');
+    sc.scrollTop = 0;
+    setTimeout(onPolicyScroll, 50);
+  }
+  function closePolicy(){ document.getElementById('policy-overlay').style.display = 'none'; }
+  function onPolicyScroll(){
+    const sc = document.getElementById('policy-scroll');
+    if(!sc) return;
+    if(sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 12){
+      const btn = document.getElementById('policy-accept-btn');
+      btn.disabled = false; btn.style.opacity = '1';
+      document.getElementById('policy-hint').textContent = 'אפשר לאשר';
+    }
+  }
+  function acceptPolicy(){
+    policyRead = true;
+    const cb = document.getElementById('consent-check');
+    cb.checked = true;
+    onConsentToggle(cb);
+    closePolicy();
+  }
+  function onConsentToggle(cb){
+    if(cb.checked && !policyRead){
+      cb.checked = false;
+      createdToast('יש לקרוא את התנאים עד הסוף לפני האישור');
+      openPolicy();
+      return;
+    }
+    consentRecord = cb.checked ? { version: CONSENT_VERSION, at: Date.now() } : null;
+  }
+  function requireConsent(){
+    if(!consentRecord){ createdToast('יש לאשר את תנאי השימוש ומדיניות הפרטיות'); return false; }
+    if(!firebaseAvailable || !firebase.auth){ createdToast('שירות ההתחברות לא זמין כרגע'); return false; }
+    return true;
+  }
+  function toggleEmailForm(){
+    const f = document.getElementById('email-form');
+    f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  }
+  async function signInGoogle(){
+    if(!requireConsent()) return;
     try{
-      let uid = localStorage.getItem('team_app_uid');
-      if(!uid){ uid = newId('u'); localStorage.setItem('team_app_uid', uid); }
-      return uid;
-    }catch(e){ return newId('u'); }
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await firebase.auth().signInWithPopup(provider);
+    }catch(e){
+      if(e && e.code === 'auth/popup-blocked'){
+        try{ await firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider()); return; }catch(e2){ e = e2; }
+      }
+      createdToast(authErrorText(e));
+    }
   }
-  async function initCapabilities(){
-    MY_UID = getLocalUid();
+  async function signInEmail(isNew){
+    if(!requireConsent()) return;
+    const email = document.getElementById('auth-email').value.trim();
+    const pw = document.getElementById('auth-password').value;
+    if(!email || !pw){ createdToast('נא להקליד אימייל וסיסמה'); return; }
+    try{
+      if(isNew) await firebase.auth().createUserWithEmailAndPassword(email, pw);
+      else await firebase.auth().signInWithEmailAndPassword(email, pw);
+    }catch(e){ createdToast(authErrorText(e)); }
   }
+  async function resetPassword(){
+    const email = document.getElementById('auth-email').value.trim();
+    if(!email){ createdToast('הקלידו קודם את כתובת האימייל'); return; }
+    try{ await firebase.auth().sendPasswordResetEmail(email); createdToast('נשלח אליכם מייל לאיפוס סיסמה ✅'); }
+    catch(e){ createdToast(authErrorText(e)); }
+  }
+  async function signOutUser(){
+    try{ localStorage.removeItem('team_app_last_name'); }catch(e){}
+    try{ await firebase.auth().signOut(); }catch(e){}
+    location.href = location.pathname;
+  }
+  function showLoginScreen(){
+    hideAppLoadingOverlay();
+    go('auth');
+    showOnboardStep(1);
+  }
+  let authBootUid = undefined;
+  function startAuth(){
+    if(!firebaseAvailable || !firebase.auth){ loadState(); return; }
+    firebase.auth().onAuthStateChanged(function(user){
+      if(user){
+        if(authBootUid === user.uid) return;
+        authBootUid = user.uid;
+        MY_UID = user.uid;
+        loadState(user);
+      } else {
+        authBootUid = null;
+        MY_UID = null;
+        stateReady = false;
+        showLoginScreen();
+      }
+    });
+  }
+  async function reauthenticate(){
+    const user = firebase.auth().currentUser;
+    const pid = user && user.providerData[0] && user.providerData[0].providerId;
+    if(pid === 'password'){
+      const pw = prompt('לאישור הפעולה, הקלידו את הסיסמה שלכם:');
+      if(!pw) throw { code:'cancelled' };
+      const cred = firebase.auth.EmailAuthProvider.credential(user.email, pw);
+      await user.reauthenticateWithCredential(cred);
+    } else {
+      await user.reauthenticateWithPopup(new firebase.auth.GoogleAuthProvider());
+    }
+  }
+  function confirmDeleteAccount(){
+    showConfirmModal('למחוק את החשבון שלך לצמיתות? הפרופיל, הקבוצות שניהלת וחברותך בקבוצות יימחקו. הפעולה לא ניתנת לביטול.', deleteAccount, 'מחיקת חשבון');
+  }
+  async function deleteAccount(){
+    const acc = currentAccount();
+    const user = firebase.auth().currentUser;
+    if(!acc || !user) return;
+    try{ await reauthenticate(); }catch(e){ if(!e || e.code !== 'cancelled') createdToast('לא ניתן היה לאמת את החשבון — נסו שוב'); return; }
+    try{
+      const ownedIds = new Set([].concat((acc.myGroups||[]).map(g=>g.id), acc.ownedGroupIds||[]));
+      for(const id of ownedIds){ await deleteGroupDoc(id); }
+      const otherIds = (acc.pendingRealRequests||[]).filter(id=>!ownedIds.has(id));
+      for(const id of otherIds){
+        const g = await loadGroup(id);
+        if(!g) continue;
+        normalizeGroup(g);
+        const wasMember = g.members.some(m=>m.id===acc.id);
+        g.members = g.members.filter(m=>m.id!==acc.id);
+        g.pendingRequests = g.pendingRequests.filter(r=>r.requesterId!==acc.id);
+        g.games.forEach(gm=>{ gm.confirmedIds = gm.confirmedIds.filter(x=>x!==acc.id); gm.declinedIds = gm.declinedIds.filter(x=>x!==acc.id); });
+        if(wasMember) g.memberCount = Math.max(1, (g.memberCount||1) - 1);
+        await saveGroup(g);
+      }
+      await fbdb.ref('users/'+user.uid).remove();
+      await user.delete();
+      try{ localStorage.clear(); }catch(e){}
+      location.href = location.pathname;
+    }catch(e){
+      console.error(e);
+      createdToast('מחיקת החשבון נכשלה — נסו שוב');
+    }
+  }
+  async function initCapabilities(){}
   async function loadGroup(id){
     if(!fbdb) return null;
     try{
@@ -1361,8 +1573,7 @@
     return state && state.profile ? state.profile : null;
   }
 
-  async function loadState(){
-    await initCapabilities();
+  async function loadState(authUser){
     if(!firebaseAvailable || !MY_UID){
       state = defaultState();
       stateReady = true;
@@ -1393,6 +1604,7 @@
     }
     stateReady = true;
     if(state.profile){
+      if(!state.profile.consent && consentRecord){ state.profile.consent = consentRecord; saveState(); }
       postLoginSetup();
       go('home');
       hideAppLoadingOverlay();
@@ -1401,6 +1613,9 @@
     } else {
       renderAll();
       hideAppLoadingOverlay();
+      if(authUser && authUser.displayName){ const ni = document.getElementById('onboard-name'); if(ni && !ni.value) ni.value = authUser.displayName.slice(0,20); }
+      go('auth');
+      showOnboardStep(2);
     }
   }
   async function processPendingInviteParam(){
@@ -1784,6 +1999,7 @@
     const name = onboardData.name;
     state.profile = {
       id: MY_UID,
+      consent: consentRecord || { version: CONSENT_VERSION, at: Date.now() },
       name,
       photo: onboardData.photo,
       gender: onboardData.gender,
@@ -3323,7 +3539,7 @@
 
   populateCitySelect(document.getElementById('search-city'), true);
   populateCitySelect(document.getElementById('cg-city'), false);
-  loadState();
+  startAuth();
 </script>
 </body>
 </html>
