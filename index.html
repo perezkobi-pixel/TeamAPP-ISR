@@ -323,7 +323,7 @@
           <div style="margin-bottom:22px;">
             <img class="app-logo-img" style="width:150px; height:auto; display:block;" alt="TEAM">
           </div>
-          <div style="font-family:'Rubik'; font-weight:900; font-size:32px; color:var(--pitch-dark); letter-spacing:0.03em; margin-bottom:22px;">TEAM</div>
+          <div style="font-family:'Rubik'; font-weight:900; font-size:32px; color:var(--pitch-dark); letter-spacing:0.03em; margin-bottom:22px;">TEAM<span style="color:var(--orange);">APP</span></div>
           <h1 style="font-size:28px; line-height:1.25;">ברוכים הבאים 👋<br>בואו נמצא לכם קבוצה.</h1>
           <p style="color:var(--ink-soft); font-size:14px; line-height:1.7; margin-top:10px; max-width:280px;">כמה שאלות קצרות, ואתם בפנים — קבוצות ספורט לפי הענף, הגיל והאזור שלכם.</p>
           <div style="width:100%; max-width:320px; margin-top:34px;">
@@ -725,7 +725,6 @@
     <div class="hero" style="padding:calc(env(safe-area-inset-top,0px) + 40px) 20px 20px; position:relative;">
       <button class="back-btn" onclick="goBack()">→ חזרה</button>
       <button id="gp-corner-icon-btn" style="display:none; position:absolute; top:calc(env(safe-area-inset-top,0px) + 34px); left:20px; background:rgba(255,255,255,0.18); border:1.5px solid rgba(255,255,255,0.4); width:38px; height:38px; border-radius:50%; color:#fff; font-size:16px; cursor:pointer; z-index:2; display:flex; align-items:center; justify-content:center;" onclick="gpCornerIconAction()"></button>
-      <button id="gp-corner-trash-btn" style="display:none; position:absolute; top:calc(env(safe-area-inset-top,0px) + 34px); left:66px; background:rgba(255,255,255,0.18); border:1.5px solid rgba(255,255,255,0.4); width:38px; height:38px; border-radius:50%; color:#fff; font-size:16px; cursor:pointer; z-index:2; display:flex; align-items:center; justify-content:center;" onclick="gpTrashAction()"></button>
       <span class="kicker" id="gp-breadcrumb" style="display:none;">הקבוצות שלי</span>
       <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
         <h1 style="font-size:26px; margin:0;" id="gp-name">הפועל הצפון</h1>
@@ -2437,8 +2436,6 @@
     const cornerBtn = document.getElementById('gp-corner-icon-btn');
     const ownerBadge = document.getElementById('gp-owner-badge');
     if(cornerBtn){ cornerBtn.style.display = 'none'; }
-    const trashBtn = document.getElementById('gp-corner-trash-btn');
-    if(trashBtn) trashBtn.style.display = 'none';
     if(ownerBadge){ ownerBadge.style.display = 'none'; }
     gpCornerIconMode = null;
     wrap.innerHTML = '';
@@ -2450,7 +2447,7 @@
       renderGpGamesSection(g, isMemberHere ? 'member' : 'none');
       if(isMemberHere){
         if(quickActions){ quickActions.style.display = 'block'; setupQuickActions('realmember', currentRealGroupId); }
-        if(cornerBtn){ cornerBtn.style.display = 'flex'; cornerBtn.textContent = '🚪'; gpCornerIconMode = { action:'leave', id: currentRealGroupId }; }
+        if(cornerBtn){ cornerBtn.style.display = 'flex'; cornerBtn.innerHTML = TRASH_SVG; gpCornerIconMode = { action:'leave', id: currentRealGroupId }; }
         wrap.innerHTML = '<p style="text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:4px; line-height:1.6;">✅ את/ה חבר/ה בקבוצה הזו</p>';
       } else if(pendingHere){
         if(quickActions) quickActions.style.display = 'none';
@@ -2482,7 +2479,7 @@
       } else {
         reqsSection.style.display = 'none';
       }
-      if(cornerBtn){ cornerBtn.style.display = 'flex'; cornerBtn.textContent = '✎'; gpCornerIconMode = { action:'edit', id: currentOwnedGroupId }; if(trashBtn){ trashBtn.style.display = 'flex'; trashBtn.innerHTML = TRASH_SVG; } }
+      if(cornerBtn){ cornerBtn.style.display = 'flex'; cornerBtn.textContent = '✎'; gpCornerIconMode = { action:'edit', id: currentOwnedGroupId }; }
       if(ownerBadge){ ownerBadge.textContent = '👑 את/ה מנהל/ת'; ownerBadge.style.display = 'inline-block'; }
       if(quickActions){ quickActions.style.display = 'block'; setupQuickActions('custom', currentOwnedGroupId); }
       return;
@@ -2497,7 +2494,7 @@
       const g = await loadGroup(currentRealMemberGroupId);
       renderGpGamesSection(g, 'member');
       if(quickActions){ quickActions.style.display = 'block'; setupQuickActions('realmember', currentRealMemberGroupId); }
-      if(cornerBtn){ cornerBtn.style.display = 'flex'; cornerBtn.textContent = '🚪'; gpCornerIconMode = { action:'leave', id: currentRealMemberGroupId }; }
+      if(cornerBtn){ cornerBtn.style.display = 'flex'; cornerBtn.innerHTML = TRASH_SVG; gpCornerIconMode = { action:'leave', id: currentRealMemberGroupId }; }
       wrap.innerHTML = '<p style="text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:4px; line-height:1.6;">✅ את/ה חבר/ה בקבוצה הזו</p>';
       return;
     }
@@ -2700,7 +2697,6 @@
     document.getElementById('action-sheet-overlay').style.display = 'none';
   }
   const TRASH_SVG = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6h17"/><path d="M8.5 6l1.2-2.2h4.6L15.5 6"/><path d="M5.5 9.5v6.5a4 4 0 004 4h5a4 4 0 004-4V9.5"/><path d="M10 12.5v4M14 12.5v4"/></svg>';
-  function gpTrashAction(){ if(currentOwnedGroupId) confirmDeleteMyGroup(currentOwnedGroupId); }
   function openGroupEditMenu(){
     if(!currentOwnedGroupId) return;
     const id = currentOwnedGroupId;
@@ -2715,7 +2711,7 @@
   let gpCornerIconMode = null;
   function gpCornerIconAction(){
     if(!gpCornerIconMode) return;
-    if(gpCornerIconMode.action === 'edit') openEditGroup(gpCornerIconMode.id);
+    if(gpCornerIconMode.action === 'edit') openGroupEditMenu();
     else if(gpCornerIconMode.action === 'leave') confirmLeaveGroup(gpCornerIconMode.id);
   }
   function confirmLeaveGroup(groupId){
@@ -3258,7 +3254,7 @@
     const upcomingCustom = allUpcomingCustomGames();
     const hasCustomGames = upcomingCustom.length > 0;
     if(homeCustomGamesSlot){
-      homeCustomGamesSlot.innerHTML = upcomingCustom.map((x,i) => customGameCardHTML(x.group, x.game, i===0)).join('');
+      homeCustomGamesSlot.innerHTML = groupGamesByDate(upcomingCustom).map(grp => '<span class="section-label">'+formatCalDayHeader(grp.date)+'</span>' + grp.items.map(x => customGameCardHTML(x.group, x.game, false)).join('')).join('');
     }
     if(homeGamesWrap) homeGamesWrap.style.display = isMember ? 'block' : 'none';
     if(homeCustomGamesWrap) homeCustomGamesWrap.style.display = hasCustomGames ? 'block' : 'none';
