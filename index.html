@@ -11,6 +11,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <style>
   :root{
     --pitch-dark:#0D2318;
@@ -308,6 +309,111 @@
     background:var(--card); border:1.5px solid var(--line); color:var(--pitch-dark);
     border-radius:14px; padding:13px; font-family:'Heebo'; font-weight:700; font-size:14px; cursor:pointer; width:100%;
   }
+
+  /* connection / busy / error states */
+  #busy-bar{ position:absolute; top:0; left:0; right:0; height:3px; z-index:600; overflow:hidden; opacity:0; pointer-events:none; transition:opacity .2s; }
+  #busy-bar.on{ opacity:1; }
+  #busy-bar::before{ content:''; position:absolute; top:0; bottom:0; width:40%; background:var(--orange); animation:busy-slide 1s ease-in-out infinite; }
+  @keyframes busy-slide{ 0%{ right:-40%; } 100%{ right:100%; } }
+  #net-banner{ position:absolute; top:0; left:0; right:0; z-index:590; background:#B45309; color:#fff; font-size:12.5px; font-weight:700; text-align:center; padding:calc(env(safe-area-inset-top,0px) + 6px) 12px 6px; display:none; }
+  #app-error-overlay{ display:none; position:absolute; inset:0; background:var(--chalk); z-index:550; align-items:center; justify-content:center; flex-direction:column; padding:30px; text-align:center; }
+  .skeleton-line{ height:14px; border-radius:7px; background:linear-gradient(90deg,var(--line),#f3f1ea,var(--line)); background-size:200% 100%; animation:skel 1.2s linear infinite; margin:10px 0; }
+  @keyframes skel{ 0%{ background-position:200% 0; } 100%{ background-position:-200% 0; } }
+
+  /* ===== TEAM visual refresh: modern pitch-side design system ===== */
+  :root{
+    --pitch-dark:#06372d;
+    --pitch:#075447;
+    --pitch-light:#0b7059;
+    --chalk:#f6f7f1;
+    --card:#ffffff;
+    --line:#e4eae3;
+    --ink:#102c25;
+    --ink-soft:#61746c;
+    --orange:#ff5938;
+    --orange-deep:#ed4728;
+    --yellow:#ffc83d;
+    --shadow:0 8px 24px rgba(5,55,45,.09);
+    --radius:22px;
+  }
+  body{background:#e9eee8;color:var(--ink);}
+  .app{background:var(--chalk);}
+  .screen{background:var(--chalk);}
+  .scroll{scrollbar-width:thin;scrollbar-color:#c8d5cc transparent;}
+  .topbar{
+    padding:calc(env(safe-area-inset-top,0px) + 17px) 20px 15px;
+    background:rgba(246,247,241,.96);
+    border-bottom:1px solid rgba(13,65,52,.06);
+    backdrop-filter:blur(16px);
+  }
+  .topbar h1{font-size:25px;line-height:1.18;color:var(--pitch-dark);margin-top:4px;}
+  .kicker{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#73877d;font-weight:800;}
+  .avatar-btn,.icon-btn,.back-btn{
+    border:1px solid #e3eae3!important;background:#fff!important;
+    box-shadow:0 3px 10px rgba(6,55,45,.06);border-radius:15px!important;
+  }
+  .card,.stat-box,.announce-card,.sport-tile,.msg-bubble,.field,.chip,.pin,.city-suggestion-item{
+    border-radius:18px!important;
+  }
+  .card,.stat-box,.announce-card{
+    border:1px solid rgba(15,67,53,.07)!important;
+    box-shadow:0 5px 18px rgba(10,48,37,.055)!important;
+    background:#fff;
+  }
+  .card{overflow:hidden;}
+  .card-banner{border-radius:16px!important;overflow:hidden;}
+  .section-label{font-size:15px;font-weight:900;color:var(--pitch-dark);letter-spacing:-.01em;}
+  .btn{
+    border-radius:999px!important;font-weight:800!important;letter-spacing:0!important;
+    min-height:46px;transition:transform .16s ease,box-shadow .16s ease,filter .16s ease;
+  }
+  .btn:active,.nav-btn:active,.sport-tile:active{transform:scale(.98);}
+  .btn-primary{
+    background:linear-gradient(135deg,#ff6b43 0%,#ff512f 100%)!important;
+    box-shadow:0 7px 16px rgba(255,89,56,.22)!important;color:#fff!important;
+  }
+  .btn-primary:hover{filter:brightness(1.03);}
+  .btn-ghost{border:1px solid #d8e4dc!important;background:#fff!important;color:var(--pitch)!important;}
+  .btn-dark{background:var(--pitch-dark)!important;color:#fff!important;}
+  .field{background:#fff!important;border:1px solid #dfe8e0!important;box-shadow:0 2px 8px rgba(10,48,37,.025);}
+  .field:focus-within{border-color:#0c8068!important;box-shadow:0 0 0 3px rgba(12,128,104,.10)!important;}
+  input,select,textarea{accent-color:var(--orange);}
+  .chip{border:1px solid #e0e8e1!important;background:#fff!important;color:#52675d!important;}
+  .chip.active,.chip.selected{background:#e1f2e9!important;border-color:#8bc8ad!important;color:#075447!important;}
+  .sport-tile{background:#fff!important;border:1px solid #e2e9e2!important;box-shadow:0 4px 12px rgba(10,48,37,.045)!important;}
+  .sport-tile.active,.sport-tile.selected{border-color:var(--orange)!important;background:#fff5f0!important;box-shadow:0 0 0 2px rgba(255,89,56,.08)!important;}
+  .hero{border-radius:23px!important;overflow:hidden;box-shadow:0 10px 22px rgba(6,55,45,.13);}
+  .pill-toggle{border-radius:999px!important;background:#e8eee8!important;}
+  .pill-toggle.active{background:var(--pitch)!important;color:#fff!important;}
+  .msg-row{border-bottom:1px solid #e8eee8!important;padding-top:12px;padding-bottom:12px;}
+  .msg-bubble{box-shadow:0 3px 10px rgba(10,48,37,.045)!important;}
+  .navbar{
+    background:linear-gradient(180deg,#075447 0%,#04382f 100%)!important;
+    border-top:1px solid rgba(255,255,255,.12)!important;
+    box-shadow:0 -8px 24px rgba(5,55,45,.11)!important;
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  .nav-btn{border-radius:14px!important;transition:background .18s ease,color .18s ease;}
+  .nav-btn.active{background:rgba(255,255,255,.10)!important;color:#ff6847!important;}
+  .nav-btn.active svg,.nav-btn.active .nav-icon{color:#ff6847!important;}
+  .badge{border-radius:999px!important;font-weight:800;}
+  .empty-note{border:1px dashed #cbd9ce!important;border-radius:20px!important;background:rgba(255,255,255,.7)!important;}
+  .modal-sheet-title{color:var(--pitch-dark)!important;font-weight:900!important;}
+  .tag-chip{border-radius:999px!important;}
+  .about-text{line-height:1.8;}
+  /* Onboarding and sign-in screens */
+  #screen-auth{background:radial-gradient(ellipse at 50% 0%,#e3f0e7 0%,#f7f8f3 55%,#edf3ed 100%)!important;}
+  #screen-auth h1{color:var(--pitch-dark);letter-spacing:-.035em;}
+  #screen-auth .app-logo-img{filter:drop-shadow(0 8px 16px rgba(5,55,45,.10));}
+  #screen-auth .onboard-step{min-height:100%;}
+  /* Smooth, accessible focus states */
+  button:focus-visible,a:focus-visible,.nav-btn:focus-visible,.sport-tile:focus-visible{outline:3px solid rgba(255,89,56,.55)!important;outline-offset:3px;}
+  @media (min-width:561px){
+    body{padding:18px 0;}
+    .app{height:calc(100dvh - 36px);min-height:640px;border-radius:28px;overflow:hidden;box-shadow:0 18px 60px rgba(4,42,34,.18)!important;border:1px solid rgba(5,55,45,.08);}
+  }
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important;}}
+
 </style>
 </head>
 <body>
@@ -335,6 +441,9 @@
             <button class="btn btn-ghost" id="btn-google" onclick="signInGoogle()" style="display:flex; align-items:center; justify-content:center; gap:10px;">
               <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 019.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 000 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>
               המשך עם Google
+            </button>
+            <button class="btn btn-ghost" id="btn-apple" onclick="signInApple()" style="display:none; align-items:center; justify-content:center; gap:10px; margin-top:10px; background:#000; color:#fff; border-color:#000;">
+              <span style="font-size:18px; line-height:1;">&#xF8FF;</span> המשך עם Apple
             </button>
             <button class="btn btn-primary" id="btn-email-toggle" style="margin-top:10px;" onclick="toggleEmailForm()">✉️ כניסה עם אימייל</button>
             <div id="email-form" style="display:none; margin-top:12px; text-align:right;">
@@ -799,6 +908,7 @@
           <div id="gp-games-list"></div>
         </div>
 
+        <div style="padding:0 20px 4px; text-align:center;"><button class="link-btn" id="gp-report-btn" style="display:none; font-size:12px; color:var(--ink-soft);" onclick="reportCurrentGroup()">🚩 דיווח על הקבוצה</button></div>
         <div style="padding:10px 20px 24px;" id="gp-action">
           <button class="btn btn-primary" onclick="submitJoinRequest()">בקשה להצטרפות לקבוצה</button>
           <p style="text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:10px; line-height:1.6;">הצ'אט הקבוצתי ייפתח לצפייה לאחר אישור ההצטרפות</p>
@@ -1064,7 +1174,15 @@
 
       <div class="field-divider"></div>
       <div style="padding:6px 20px 24px;">
-        <button class="btn btn-ghost" onclick="openPolicy()">📄 תנאי שימוש ומדיניות פרטיות</button>
+        <div id="profile-notif-section" style="display:none; text-align:right; margin-bottom:14px;">
+          <div style="font-weight:800; font-size:14px; margin-bottom:8px;">🔔 התראות</div>
+          <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; padding:6px 0;"><input type="checkbox" id="notif-chat" checked onchange="setNotifPref('chat', this.checked)" style="width:18px;height:18px;accent-color:var(--orange);"> הודעות בצ׳אט</label>
+          <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; padding:6px 0;"><input type="checkbox" id="notif-games" checked onchange="setNotifPref('games', this.checked)" style="width:18px;height:18px;accent-color:var(--orange);"> משחקים, ביטולים ותזכורות</label>
+          <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; padding:6px 0;"><input type="checkbox" id="notif-requests" checked onchange="setNotifPref('requests', this.checked)" style="width:18px;height:18px;accent-color:var(--orange);"> בקשות הצטרפות ואישורים</label>
+        </div>
+        <button class="btn btn-ghost" onclick="openBlockedList()">🚫 משתמשים חסומים</button>
+        <button class="btn btn-ghost" style="margin-top:10px;" onclick="contactSupport()">✉️ יצירת קשר עם התמיכה</button>
+        <button class="btn btn-ghost" style="margin-top:10px;" onclick="openPolicy()">📄 תנאי שימוש ומדיניות פרטיות</button>
         <button class="btn btn-ghost" style="margin-top:10px;" onclick="signOutUser()">התנתקות</button>
         <button class="btn btn-ghost" style="margin-top:10px; color:#DC2626; border-color:#FCA5A5;" onclick="confirmDeleteAccount()">מחיקת החשבון שלי</button>
       </div>
@@ -1112,7 +1230,14 @@
     </div>
   </section>
 
-  <div id="toast" style="position:absolute; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--pitch-dark); color:#fff; padding:10px 20px; border-radius:100px; font-size:12.5px; font-weight:600; opacity:0; transition:.25s; z-index:100; white-space:nowrap;"></div>
+  <div id="busy-bar"></div>
+  <div id="net-banner">אין חיבור לאינטרנט — השינויים יישמרו כשהחיבור יחזור</div>
+  <div id="app-error-overlay">
+    <div style="font-size:42px; margin-bottom:10px;">📡</div>
+    <div id="app-error-text" style="font-size:15px; font-weight:700; line-height:1.6; margin-bottom:18px; color:var(--ink);">לא הצלחנו להתחבר לשרת</div>
+    <button class="btn btn-primary" style="max-width:240px;" onclick="retryLoad()">נסו שוב</button>
+  </div>
+  <div id="toast" style="position:absolute; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--pitch-dark); color:#fff; padding:10px 20px; border-radius:18px; font-size:12.5px; font-weight:600; opacity:0; transition:.25s; z-index:700; width:max-content; max-width:88%; text-align:center; line-height:1.5; pointer-events:none;"></div>
 
   <div id="action-sheet-overlay" style="display:none; position:absolute; inset:0; background:rgba(13,35,23,0.55); z-index:210; align-items:flex-end; justify-content:center;">
     <div style="background:#fff; border-radius:20px 20px 0 0; padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 16px); width:100%; max-width:560px;">
@@ -1144,7 +1269,7 @@
       <div id="policy-scroll" onscroll="onPolicyScroll()" style="flex:1; overflow-y:auto; padding:14px 18px; font-size:13px; line-height:1.8; color:var(--ink);"><h3 style="font-size:14px; margin:0 0 6px;">חלק א׳ — תנאי שימוש</h3>
 <p><b>1. כללי.</b> TEAMAPP היא אפליקציה המאפשרת לאתר קבוצות ספורט מקומיות, להצטרף אליהן ולתאם משחקים. השימוש באפליקציה מותר למי שמלאו לו 18 שנים. השימוש מהווה הסכמה לתנאים אלה.</p>
 <p><b>2. חשבון.</b> עליך למסור פרטים נכונים ולשמור על סודיות אמצעי הכניסה לחשבונך. אתה אחראי לכל פעולה שנעשית בחשבונך.</p>
-<p><b>3. התנהגות ותוכן.</b> אסור להעלות או לשלוח תוכן פוגעני, מאיים, גזעני, מיני, מטעה או בלתי חוקי, להטריד משתמשים אחרים, להתחזות או לפרסם פרטים אישיים של אחרים. אנו רשאים להסיר תוכן, להשעות או למחוק חשבונות שמפרים כללים אלה.</p>
+<p><b>3. התנהגות ותוכן.</b> אסור להעלות או לשלוח תוכן פוגעני, מאיים, גזעני, מיני, מטעה או בלתי חוקי, להטריד משתמשים אחרים, להתחזות או לפרסם פרטים אישיים של אחרים. אין סובלנות כלפי תוכן פוגעני או משתמשים פוגעניים. אנו רשאים להסיר תוכן, להשעות או למחוק חשבונות שמפרים כללים אלה. ניתן לדווח על הודעה, משתמש או קבוצה, ולחסום משתמשים, ישירות מהאפליקציה; דיווחים נבדקים בהקדם האפשרי ובדרך כלל תוך 24 שעות.</p>
 <p><b>4. פעילות ספורטיבית.</b> המשחקים והמפגשים מאורגנים על ידי משתמשים, לא על ידינו. ההשתתפות היא באחריותך בלבד, כולל התאמה בריאותית ובטיחות. TEAMAPP אינה צד לפעילות, אינה מפקחת עליה ואינה אחראית לנזק או לפציעה שיגרמו בה. מומלץ להיוועץ ברופא לפני פעילות גופנית.</p>
 <p><b>5. מנהלי קבוצות.</b> מנהל קבוצה אחראי לתוכן הקבוצה ולניהולה, ורשאי לאשר או לדחות בקשות הצטרפות ולהסיר חברים.</p>
 <p><b>6. הגבלת אחריות.</b> השירות ניתן כמות שהוא (AS IS), ללא התחייבות לזמינות רציפה או לדיוק המידע. במידה המרבית המותרת בדין, איננו אחראים לנזקים עקיפים הנובעים מהשימוש.</p>
@@ -1221,10 +1346,16 @@
     const overlay = document.getElementById('app-loading-overlay');
     if(overlay) overlay.style.display = 'none';
   }
-  try{
-    const params = new URLSearchParams(location.search);
-    if(params.get('join')) pendingJoinParam = params.get('join').trim().toUpperCase();
-  }catch(e){}
+  // invite links look like https://<host>/join/ABC123 (or the older ?join=ABC123)
+  function parseJoinCode(url){
+    try{
+      const u = new URL(url, location.href);
+      const m = u.pathname.match(/\/join\/([A-Za-z0-9]{4,12})/);
+      const code = m ? m[1] : u.searchParams.get('join');
+      return code ? code.trim().toUpperCase() : null;
+    }catch(e){ return null; }
+  }
+  try{ pendingJoinParam = parseJoinCode(location.href); }catch(e){}
 
   const firebaseConfig = {
     apiKey: "AIzaSyBEEXWyV3MUXbiIo9kZ0vN3g9HnKktQV8o",
@@ -1242,9 +1373,11 @@
     fbdb = firebase.database();
     firebaseAvailable = true;
   }catch(e){ console.error('Firebase init failed', e); }
+  let fbstorage = null;
+  try{ if(firebaseAvailable && firebase.storage) fbstorage = firebase.storage(); }catch(e){ fbstorage = null; }
 
   let MY_UID = null;
-  const CONTACT_EMAIL = ''; // TODO: כתובת אימייל ליצירת קשר/תמיכה (תוצג במדיניות הפרטיות)
+  const CONTACT_EMAIL = ''; // TODO: perezkobi@gmail.com
   const CONSENT_VERSION = 1;
   let consentRecord = null;
   let policyRead = false;
@@ -1314,9 +1447,11 @@
   async function signInGoogle(){
     if(!requireConsent()) return;
     try{
+      if(IS_NATIVE){ await nativeSocialSignIn('google'); return; }
       const provider = new firebase.auth.GoogleAuthProvider();
       await firebase.auth().signInWithPopup(provider);
     }catch(e){
+      if(IS_NATIVE){ if(!(e && /cancel/i.test(String(e.message||e.code||'')))) createdToast(authErrorText(e)); return; }
       if(e && e.code === 'auth/popup-blocked'){
         try{ await firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider()); return; }catch(e2){ e = e2; }
       }
@@ -1340,6 +1475,7 @@
     catch(e){ createdToast(authErrorText(e)); }
   }
   async function signOutUser(){
+    await removePushToken();
     try{ localStorage.removeItem('team_app_last_name'); }catch(e){}
     try{ await firebase.auth().signOut(); }catch(e){}
     location.href = location.pathname;
@@ -1349,9 +1485,117 @@
     go('auth');
     showOnboardStep(1);
   }
+  // ================= Native app shell (Capacitor): sign-in, push, deep links, back button =================
+  const CAP = window.Capacitor || null;
+  const IS_NATIVE = !!(CAP && typeof CAP.isNativePlatform === 'function' && CAP.isNativePlatform());
+  const NATIVE_PLATFORM = IS_NATIVE ? CAP.getPlatform() : 'web';
+  const PUBLIC_BASE_URL = 'https://teamapp-isr.web.app'; // the address invite links use; must be the domain configured for Universal Links / App Links
+  function nativePlugin(name){ return (CAP && CAP.Plugins && CAP.Plugins[name]) || null; }
+  function inviteLinkFor(id){ return PUBLIC_BASE_URL + '/join/' + id; }
+  function handleDeepLinkUrl(url){
+    const code = parseJoinCode(url);
+    if(!code) return;
+    pendingJoinParam = code;
+    if(stateReady && currentAccount()){
+      processPendingInviteParam().then(function(){ refreshHomeInvitesAndRequests(); go('home'); createdToast('ההזמנה נוספה למסך הבית 🎉'); });
+    }
+  }
+  async function nativeSocialSignIn(kind){
+    const FA = nativePlugin('FirebaseAuthentication');
+    if(!FA) throw { code: 'auth/operation-not-supported-in-this-environment' };
+    if(kind === 'apple'){
+      const r = await FA.signInWithApple({ skipNativeAuth: true });
+      const cred = new firebase.auth.OAuthProvider('apple.com').credential({ idToken: r.credential.idToken, rawNonce: r.credential.nonce });
+      return firebase.auth().signInWithCredential(cred);
+    }
+    const r = await FA.signInWithGoogle({ skipNativeAuth: true });
+    const cred = firebase.auth.GoogleAuthProvider.credential(r.credential.idToken, r.credential.accessToken || null);
+    return firebase.auth().signInWithCredential(cred);
+  }
+  async function signInApple(){
+    if(!requireConsent()) return;
+    try{ await nativeSocialSignIn('apple'); }
+    catch(e){ if(!(e && /cancel/i.test(String(e.message||e.code||'')))) createdToast(authErrorText(e)); }
+  }
+  // ---- push notifications ----
+  let pushInitDone = false, pendingPushData = null;
+  function pushKey(token){ return String(token).replace(/[.#$\[\]\/]/g, '_'); }
+  async function savePushToken(token){
+    if(!fbdb || !MY_UID || !token) return;
+    try{ await fbdb.ref('users/'+MY_UID+'/tokens/'+pushKey(token)).set({ t: Date.now(), p: NATIVE_PLATFORM }); }catch(e){ console.warn('token save failed', e); }
+    try{ localStorage.setItem('team_app_push_token', token); }catch(e){}
+  }
+  async function removePushToken(){
+    try{
+      const token = localStorage.getItem('team_app_push_token');
+      if(token && fbdb && MY_UID) await fbdb.ref('users/'+MY_UID+'/tokens/'+pushKey(token)).remove();
+      localStorage.removeItem('team_app_push_token');
+    }catch(e){}
+  }
+  function routePush(data){
+    if(!data || !data.groupId) return;
+    const a = currentAccount();
+    if(!stateReady || !a){ pendingPushData = data; return; }
+    const owner = (a.ownedGroupIds||[]).includes(data.groupId);
+    if(data.type === 'chat') openGroupChat(owner ? 'custom' : 'realmember', data.groupId);
+    else if(owner) openMyGroupPreview(data.groupId);
+    else openRealMemberView(data.groupId);
+  }
+  async function initPush(askIfNeeded){
+    const PN = nativePlugin('PushNotifications');
+    if(!IS_NATIVE || !PN) return;
+    try{
+      if(!pushInitDone){
+        pushInitDone = true;
+        PN.addListener('registration', function(tk){ savePushToken(tk.value); });
+        PN.addListener('registrationError', function(err){ console.warn('push registration error', err); });
+        PN.addListener('pushNotificationReceived', function(n){ createdToast((n.title ? n.title + ' · ' : '') + (n.body || '')); });
+        PN.addListener('pushNotificationActionPerformed', function(a){ routePush(a && a.notification && a.notification.data); });
+      }
+      let st = (await PN.checkPermissions()).receive;
+      if((st === 'prompt' || st === 'prompt-with-rationale') && askIfNeeded) st = (await PN.requestPermissions()).receive;
+      if(st === 'granted') await PN.register();
+    }catch(e){ console.warn('push init failed', e); }
+  }
+  function setNotifPref(key, on){
+    const a = currentAccount(); if(!a) return;
+    if(!a.notif) a.notif = { chat:true, games:true, requests:true };
+    a.notif[key] = !!on;
+    saveState();
+  }
+  function renderNotifPrefs(){
+    const sec = document.getElementById('profile-notif-section');
+    if(!sec) return;
+    sec.style.display = IS_NATIVE ? 'block' : 'none';
+    const a = currentAccount(); if(!a) return;
+    const n = a.notif || { chat:true, games:true, requests:true };
+    ['chat','games','requests'].forEach(function(k){ const el = document.getElementById('notif-'+k); if(el) el.checked = n[k] !== false; });
+  }
+  function initNative(){
+    if(!IS_NATIVE) return;
+    const App = nativePlugin('App');
+    if(App){
+      App.addListener('appUrlOpen', function(ev){ handleDeepLinkUrl(ev && ev.url); });
+      App.getLaunchUrl().then(function(r){ if(r && r.url) handleDeepLinkUrl(r.url); }).catch(function(){});
+      App.addListener('backButton', function(){
+        const cur = document.querySelector('.screen.active');
+        if(document.getElementById('action-sheet-overlay').style.display === 'flex'){ closeActionSheet(); return; }
+        if(navStack.length) goBack();
+        else if(cur && cur.id !== 'screen-home' && cur.id !== 'screen-auth') go('home');
+        else if(App.exitApp) App.exitApp();
+      });
+    }
+    const ap = document.getElementById('btn-apple');
+    if(ap && NATIVE_PLATFORM === 'ios') ap.style.display = 'flex';
+    const sp = nativePlugin('SplashScreen');
+    if(sp && sp.hide) setTimeout(function(){ sp.hide(); }, 300);
+  }
+
   let authBootUid = undefined;
   function startAuth(){
     if(!firebaseAvailable || !firebase.auth){ loadState(); return; }
+    startConnectionWatch();
+    initNative();
     firebase.auth().onAuthStateChanged(function(user){
       if(user){
         if(authBootUid === user.uid) return;
@@ -1401,6 +1645,7 @@
         if(wasMember) g.memberCount = Math.max(1, (g.memberCount||1) - 1);
         await saveGroup(g);
       }
+      try{ const l = await fbstorage.ref('avatars/'+user.uid).listAll(); await Promise.all(l.items.map(function(i){ return i.delete(); })); }catch(e){}
       await fbdb.ref('users/'+user.uid).remove();
       await user.delete();
       try{ localStorage.clear(); }catch(e){}
@@ -1411,36 +1656,347 @@
     }
   }
   async function initCapabilities(){}
-  async function loadGroup(id){
-    if(!fbdb) return null;
+  // ================= Profile pictures live in Firebase Storage (the database only keeps the link) =================
+  async function uploadAvatar(dataUrl){
+    if(!dataUrl || dataUrl.indexOf('data:') !== 0 || !fbstorage || !MY_UID) return dataUrl; // already a link, or Storage unavailable → keep the old behaviour
     try{
-      const snap = await fbdb.ref('groups/'+id).once('value');
-      return snap.exists() ? snap.val() : null;
-    }catch(e){ return null; }
+      const ref = fbstorage.ref('avatars/' + MY_UID + '/a_' + Date.now() + '.jpg');
+      await withTimeout(ref.putString(dataUrl, 'data_url'), 30000);
+      const url = await withTimeout(ref.getDownloadURL(), 15000);
+      return url;
+    }catch(e){
+      console.warn('avatar upload failed, keeping inline copy', e);
+      return dataUrl;
+    }
+  }
+  async function deleteOldAvatars(keepUrl){
+    if(!fbstorage || !MY_UID) return;
+    try{
+      const list = await fbstorage.ref('avatars/' + MY_UID).listAll();
+      await Promise.all(list.items.map(function(it){
+        return it.getDownloadURL().then(function(u){ if(u !== keepUrl) return it.delete(); }).catch(function(){});
+      }));
+    }catch(e){}
+  }
+  // keep the copies of my picture inside groups in step (owner photo, my member entry)
+  async function propagatePhoto(url){
+    const a = currentAccount();
+    if(!a || !fbdb) return;
+    (a.ownedGroupIds||[]).forEach(function(id){ fbdb.ref('groups/'+id+'/ownerPhoto').set(url).catch(function(){}); });
+    (a.myGroups||[]).forEach(function(g){ g.ownerPhoto = url; if(g.__base) g.__base.ownerPhoto = url; });
+    (a.pendingRealRequests||[]).forEach(function(id){ fbdb.ref('groupMembers/'+id+'/'+MY_UID+'/photo').set(url).catch(function(){}); });
+  }
+  let avatarMigrationDone = false;
+  async function migrateInlineAvatar(){
+    const a = currentAccount();
+    if(avatarMigrationDone || !a || !a.photo || a.photo.indexOf('data:') !== 0 || !fbstorage) return;
+    avatarMigrationDone = true;
+    const url = await uploadAvatar(a.photo);
+    if(url && url.indexOf('data:') !== 0){
+      a.photo = url; saveState(); updateAvatarInitials(a.name, a.photo); propagatePhoto(url); deleteOldAvatars(url);
+    }
+  }
+
+  // ================= Safety: report, block, support =================
+  const REPORT_REASONS = ['הטרדה או שפה פוגענית','ספאם או פרסום','תוכן מיני או לא הולם','התחזות או פרטים כוזבים','אחר'];
+  function isBlockedUser(uid){
+    const a = currentAccount();
+    return !!(a && uid && a.blocked && a.blocked[uid]);
+  }
+  function blockUser(uid, name){
+    const a = currentAccount();
+    if(!a || !uid || uid === a.id) return;
+    if(!a.blocked) a.blocked = {};
+    a.blocked[uid] = { name: name || '', at: Date.now() };
+    saveState();
+    createdToast('החסימה הופעלה — לא תראו יותר הודעות או קבוצות של '+(name||'המשתמש/ת'));
+    renderAll(); renderChat();
+    try{ refreshHomeInvitesAndRequests(); renderGroupPreviewButton(); }catch(e){}
+  }
+  function unblockUser(uid){
+    const a = currentAccount();
+    if(!a || !a.blocked) return;
+    delete a.blocked[uid];
+    saveState();
+    createdToast('החסימה בוטלה');
+    renderAll(); renderChat();
+  }
+  function openBlockedList(){
+    const a = currentAccount();
+    const ids = a && a.blocked ? Object.keys(a.blocked) : [];
+    if(!ids.length){ createdToast('אין משתמשים חסומים'); return; }
+    showActionSheet(ids.map(function(uid){
+      return { label: 'ביטול חסימה · ' + (a.blocked[uid].name || 'משתמש/ת'), onClick: function(){ unblockUser(uid); } };
+    }));
+  }
+  // opts: { uid, name, type:'message'|'user', groupId, msgId, text }
+  function openUserActions(opts){
+    const a = currentAccount();
+    if(!a || !opts || !opts.uid || opts.uid === a.id) return;
+    const buttons = [{ label: '🚩 דיווח' + (opts.type === 'message' ? ' על ההודעה' : ' על המשתמש/ת'), onClick: function(){ openReportReasons(opts); } }];
+    if(!isBlockedUser(opts.uid)) buttons.push({ label: '🚫 חסימת ' + (opts.name || 'המשתמש/ת'), danger: true, onClick: function(){
+      showConfirmModal('לחסום את '+(opts.name||'המשתמש/ת')+'? לא תראו ממנו הודעות, והקבוצות שלו יוסתרו מהחיפוש. אפשר לבטל בכל עת מהפרופיל.', function(){ blockUser(opts.uid, opts.name); }, 'חסימה');
+    }});
+    showActionSheet(buttons);
+  }
+  function openMessageActions(idx){
+    const m = getChatArray()[idx];
+    if(!m || !m.senderId) return;
+    openUserActions({ uid: m.senderId, name: m.senderName, type: 'message', groupId: currentChatContext.groupId, msgId: m.id, text: m.text });
+  }
+  function openReportReasons(opts){
+    showActionSheet(REPORT_REASONS.map(function(r){ return { label: r, onClick: function(){ submitReport(opts, r); } }; }));
+  }
+  async function submitReport(opts, reason){
+    const a = currentAccount();
+    if(!a || !fbdb) return;
+    if(!isOnline()){ createdToast('אין חיבור לאינטרנט — הדיווח לא נשלח'); return; }
+    const rec = {
+      reporterId: a.id, reporterName: a.name || '',
+      type: opts.type || 'user', reason: reason,
+      groupId: opts.groupId || null, groupName: opts.groupName || null,
+      targetId: opts.uid || null, targetName: opts.name || null,
+      msgId: opts.msgId || null, text: opts.text ? String(opts.text).slice(0, 400) : null,
+      ts: Date.now()
+    };
+    try{
+      await withTimeout(fbdb.ref('reports/'+newId('rep')).set(plain(rec)));
+      createdToast('תודה, הדיווח התקבל. נבדוק אותו בהקדם 🙏');
+    }catch(e){ createdToast(friendlyError(e, 'שליחת הדיווח נכשלה')); }
+  }
+  async function reportCurrentGroup(){
+    const ctx = getCurrentGroupContext();
+    if(!ctx) return;
+    let g = null;
+    try{ g = await loadGroup(ctx.id, { noChat:true }); }catch(e){}
+    openReportReasons({ type:'group', groupId: ctx.id, groupName: g && g.name, uid: g && g.ownerId, name: g && g.ownerName });
+  }
+  function updateReportBtn(){
+    const el = document.getElementById('gp-report-btn');
+    if(!el) return;
+    const ctx = getCurrentGroupContext();
+    el.style.display = (ctx && ctx.mode !== 'owner') ? 'block' : 'none';
+  }
+  function contactSupport(){
+    const a = currentAccount();
+    if(!CONTACT_EMAIL){ showInfoModal('יצירת קשר', '<p style="line-height:1.7;">כתובת התמיכה תתווסף בקרוב.</p>'); return; }
+    const subject = encodeURIComponent('TEAMAPP — פנייה לתמיכה');
+    const body = encodeURIComponent('\n\n---\nמזהה משתמש: ' + (a ? a.id : '') );
+    window.location.href = 'mailto:' + CONTACT_EMAIL + '?subject=' + subject + '&body=' + body;
+  }
+
+  // ================= Connection state & friendly errors =================
+  let fbConnected = null; // null = unknown yet
+  function isOnline(){ return navigator.onLine !== false && fbConnected !== false; }
+  function updateNetBanner(){
+    const b = document.getElementById('net-banner');
+    if(b) b.style.display = isOnline() ? 'none' : 'block';
+  }
+  function startConnectionWatch(){
+    window.addEventListener('online', updateNetBanner);
+    window.addEventListener('offline', updateNetBanner);
+    try{
+      fbdb.ref('.info/connected').on('value', function(s){ fbConnected = !!s.val(); updateNetBanner(); });
+    }catch(e){}
+  }
+  function friendlyError(e, fallback){
+    const msg = String((e && (e.code || e.message)) || '').toLowerCase();
+    if(!isOnline() || msg.indexOf('network') >= 0 || msg.indexOf('offline') >= 0) return 'אין חיבור לאינטרנט — נסו שוב כשהחיבור יחזור';
+    if(msg.indexOf('timeout') >= 0) return 'השרת לא הגיב בזמן — נסו שוב';
+    if(msg.indexOf('permission') >= 0) return 'אין הרשאה לבצע את הפעולה';
+    return (fallback || 'משהו השתבש') + ' — נסו שוב';
+  }
+  window.addEventListener('unhandledrejection', function(ev){
+    console.error('unhandled', ev.reason);
+    try{ createdToast(friendlyError(ev.reason, 'אירעה שגיאה')); }catch(e){}
+    ev.preventDefault();
+  });
+
+  // ================= Safety: text from other users is neutralised before it can reach the page =================
+  function cleanText(s){
+    return String(s).replace(/[<>\\]/g, '').replace(/"/g, '״').replace(/'/g, '׳').replace(/`/g, '׳');
+  }
+  function sanitizeDeep(v){
+    if(typeof v === 'string') return cleanText(v);
+    if(Array.isArray(v)) return v.map(sanitizeDeep);
+    if(v && typeof v === 'object'){ const o = {}; Object.keys(v).forEach(function(k){ o[k] = sanitizeDeep(v[k]); }); return o; }
+    return v;
+  }
+
+  // ================= Group data layer =================
+  // A group is NOT one big document. It is spread over small nodes so two people acting at the same moment never overwrite each other:
+  //   groups/<id>          details (name, sport, city, ...)           groupMembers/<id>/<uid>
+  //   groupGames/<id>/<gameId>/rsvp/<uid>                             groupRequests/<id>/<uid>
+  //   groupChat/<id>/<messageId>   (one node per message)
+  // The app keeps working with one in-memory object per group; saveGroup() writes only what changed.
+  const GROUP_PARTS = ['chat','members','pendingRequests','games'];
+  const CHAT_LIMIT = 100;
+  const NET_TIMEOUT_MS = 15000;
+  let busyCount = 0;
+  function busyBegin(){ busyCount++; const el = document.getElementById('busy-bar'); if(el) el.classList.add('on'); }
+  function busyEnd(){ busyCount = Math.max(0, busyCount-1); if(!busyCount){ const el = document.getElementById('busy-bar'); if(el) el.classList.remove('on'); } }
+  function withTimeout(promise, ms, label){
+    return new Promise(function(resolve, reject){
+      const t = setTimeout(function(){ const e = new Error('timeout'); e.code = 'timeout'; e.label = label; reject(e); }, ms || NET_TIMEOUT_MS);
+      promise.then(function(v){ clearTimeout(t); resolve(v); }, function(err){ clearTimeout(t); reject(err); });
+    });
+  }
+  function plain(o){ return o == null ? o : JSON.parse(JSON.stringify(o)); }
+  function deepEq(a, b){ return JSON.stringify(sortKeysDeep(a)) === JSON.stringify(sortKeysDeep(b)); }
+  function sortKeysDeep(v){
+    if(Array.isArray(v)) return v.map(sortKeysDeep);
+    if(v && typeof v === 'object'){ const o = {}; Object.keys(v).sort().forEach(function(k){ if(v[k] !== undefined && v[k] !== null) o[k] = sortKeysDeep(v[k]); }); return o; }
+    return v;
+  }
+  function gameToStored(gm){
+    const o = plain(gm); const rsvp = {};
+    (o.confirmedIds||[]).forEach(function(u){ rsvp[u] = true; });
+    (o.declinedIds||[]).forEach(function(u){ rsvp[u] = false; });
+    delete o.confirmedIds; delete o.declinedIds; delete o.rsvp;
+    return { fields: o, rsvp: rsvp };
+  }
+  function gameFromStored(o){
+    const gm = plain(o); gm.confirmedIds = []; gm.declinedIds = [];
+    Object.keys(gm.rsvp||{}).forEach(function(u){ (gm.rsvp[u] ? gm.confirmedIds : gm.declinedIds).push(u); });
+    delete gm.rsvp;
+    return gm;
+  }
+  function setBase(g, base){
+    Object.defineProperty(g, '__base', { value: base, writable: true, configurable: true, enumerable: false });
+  }
+  function takeBase(g){
+    const b = plain(g) || {};
+    GROUP_PARTS.forEach(function(p){ if(!b[p]) b[p] = []; });
+    return b;
+  }
+  function ensureItemIds(g){
+    (g.chat||[]).forEach(function(m){ if(!m.id) m.id = newId('m'); if(!m.ts) m.ts = Date.now(); });
+    (g.members||[]).forEach(function(m){ if(!m.id) m.id = newId('mem'); if(!m.joinedAt) m.joinedAt = Date.now(); });
+    (g.pendingRequests||[]).forEach(function(r){ if(!r.id) r.id = newId('r'); if(!r.requesterId) r.requesterId = r.id; if(!r.ts) r.ts = Date.now(); });
+    (g.games||[]).forEach(function(gm){ if(!gm.id) gm.id = newId('game'); if(!gm.createdAt) gm.createdAt = Date.now(); });
+  }
+  const byNum = function(f){ return function(a,b){ return (a[f]||0) - (b[f]||0); }; };
+  // build the in-memory group from the raw nodes
+  function assembleGroup(id, meta, raw, isOwner){
+    meta = sanitizeDeep(meta);
+    raw = { members: sanitizeDeep(raw.members), requests: sanitizeDeep(raw.requests), games: sanitizeDeep(raw.games), chat: sanitizeDeep(raw.chat) };
+    const g = plain(meta);
+    g.id = id;
+    const vals = function(o){ return o ? Object.keys(o).map(function(k){ return o[k]; }) : []; };
+    const keyOf = {
+      chat: function(m){ return m.id; }, members: function(m){ return m.id; },
+      pendingRequests: function(r){ return r.requesterId || r.id; }, games: function(x){ return x.id; }
+    };
+    const legacy = {};
+    GROUP_PARTS.forEach(function(p){
+      const arr = Array.isArray(g[p]) ? g[p] : (g[p] ? Object.values(g[p]) : []);
+      arr.forEach(function(it, i){ if(it && !it.id && p !== 'pendingRequests') it.id = 'legacy_' + i; });
+      legacy[p] = arr.filter(Boolean);
+    });
+    const loaded = { chat: raw.chat !== undefined, members: true, games: true, pendingRequests: raw.requests !== undefined };
+    const fromNew = {
+      members: vals(raw.members),
+      games: vals(raw.games).filter(function(x){ return x && x.id && x.date && x.time; }).map(gameFromStored),
+      chat: raw.chat ? Object.keys(raw.chat).map(function(k){ const m = raw.chat[k]; if(!m.id) m.id = k; return m; }) : [],
+      pendingRequests: raw.requests === undefined || raw.requests === null ? [] : (isOwner ? vals(raw.requests) : [raw.requests])
+    };
+    const sorters = { members: byNum('joinedAt'), chat: byNum('ts'), pendingRequests: byNum('ts'), games: function(a,b){ return (b.createdAt||0) - (a.createdAt||0); } };
+    const base = {};
+    const toClean = [];
+    GROUP_PARTS.forEach(function(p){
+      if(!loaded[p]){ return; }
+      const have = {}; fromNew[p].forEach(function(it){ have[keyOf[p](it)] = true; });
+      // items still living in the old embedded format (the owner's next save moves them into the new nodes)
+      let extra = legacy[p].filter(function(it){ return !have[keyOf[p](it)]; });
+      if(!isOwner && p === 'pendingRequests') extra = extra.filter(function(r){ return r.requesterId === MY_UID; });
+      base[p] = (isOwner ? fromNew[p] : fromNew[p].concat(extra)).slice().sort(sorters[p]);
+      g[p] = fromNew[p].concat(extra).sort(sorters[p]);
+      if(isOwner && legacy[p].length) toClean.push(p);
+    });
+    if(!loaded.chat) delete g.chat;
+    normalizeGroup(g);
+    if(!loaded.chat) delete g.chat;
+    GROUP_PARTS.forEach(function(p){ if(!base[p]) base[p] = []; });
+    const meta2 = plain(metaOf(g));
+    Object.keys(meta2).forEach(function(k){ base[k] = meta2[k]; });
+    setBase(g, plainBase(base));
+    Object.defineProperty(g, '__legacy', { value: toClean, writable: true, configurable: true, enumerable: false });
+    return g;
+  }
+  function plainBase(b){ return JSON.parse(JSON.stringify(b)); }
+  async function readNode(ref){
+    try{ const s = await withTimeout(ref.once('value')); return s.exists() ? s.val() : null; }
+    catch(e){ return null; }
+  }
+  async function hydrateGroup(id, meta, opts){
+    const owner = meta.ownerId === MY_UID;
+    const noChat = !!(opts && opts.noChat);
+    const rs = await Promise.all([
+      readNode(fbdb.ref('groupMembers/'+id)),
+      readNode(owner ? fbdb.ref('groupRequests/'+id) : fbdb.ref('groupRequests/'+id+'/'+MY_UID)),
+      readNode(fbdb.ref('groupGames/'+id)),
+      noChat ? Promise.resolve(undefined) : readNode(fbdb.ref('groupChat/'+id).orderByKey().limitToLast(CHAT_LIMIT))
+    ]);
+    return assembleGroup(id, meta, { members: rs[0], requests: rs[1], games: rs[2], chat: rs[3] }, owner);
+  }
+  // returns the group, or null when it does not exist. Throws when the network/server fails (callers show the error).
+  async function loadGroup(id, opts){
+    if(!fbdb || !id) return null;
+    busyBegin();
+    try{
+      const snap = await withTimeout(fbdb.ref('groups/'+id).once('value'));
+      if(!snap.exists()) return null;
+      return await hydrateGroup(id, snap.val(), opts);
+    } finally { busyEnd(); }
+  }
+  async function loadGroupSafe(id, opts){
+    try{ return await loadGroup(id, opts); }catch(e){ return null; }
   }
   function fbSafe(obj){
     return obj == null ? obj : JSON.parse(JSON.stringify(obj));
   }
-  let activeGroupListenerRef = null;
-  let activeGroupListenerCallback = null;
+  // live view of one group; calls onUpdate(group|null) after every change. Returns an unsubscribe function.
+  function watchGroup(id, onUpdate, opts){
+    opts = opts || {};
+    const acc = currentAccount();
+    const ownerHint = !!(acc && (acc.ownedGroupIds||[]).includes(id));
+    const raw = { meta: undefined, members: undefined, games: undefined, requests: undefined, chat: opts.chat ? undefined : null };
+    const subs = [];
+    let timer = null, dead = false;
+    const emit = function(){
+      if(dead) return;
+      if(raw.meta === undefined || raw.members === undefined || raw.games === undefined || raw.requests === undefined || raw.chat === undefined) return;
+      clearTimeout(timer);
+      timer = setTimeout(function(){
+        if(dead) return;
+        if(!raw.meta){ onUpdate(null); return; }
+        const rawCopy = Object.assign({}, raw);
+        if(!opts.chat) delete rawCopy.chat; else rawCopy.chat = raw.chat;
+        onUpdate(assembleGroup(id, raw.meta, rawCopy, raw.meta.ownerId === MY_UID));
+      }, 30);
+    };
+    const listen = function(key, ref){
+      const cb = function(snap){ raw[key] = snap.exists() ? snap.val() : null; emit(); };
+      const errCb = function(){ raw[key] = null; emit(); };
+      ref.on('value', cb, errCb);
+      subs.push(function(){ try{ ref.off('value', cb); }catch(e){} });
+    };
+    listen('meta', fbdb.ref('groups/'+id));
+    listen('members', fbdb.ref('groupMembers/'+id));
+    listen('games', fbdb.ref('groupGames/'+id));
+    listen('requests', ownerHint ? fbdb.ref('groupRequests/'+id) : fbdb.ref('groupRequests/'+id+'/'+MY_UID));
+    if(opts.chat) listen('chat', fbdb.ref('groupChat/'+id).orderByKey().limitToLast(CHAT_LIMIT));
+    return function(){ dead = true; clearTimeout(timer); subs.forEach(function(f){ f(); }); };
+  }
+  let activeGroupUnsub = null;
   function detachGroupListener(){
-    if(activeGroupListenerRef && activeGroupListenerCallback){
-      try{ activeGroupListenerRef.off('value', activeGroupListenerCallback); }catch(e){}
-    }
-    activeGroupListenerRef = null;
-    activeGroupListenerCallback = null;
+    if(activeGroupUnsub){ try{ activeGroupUnsub(); }catch(e){} }
+    activeGroupUnsub = null;
   }
   function attachGroupListener(id, onUpdate){
     detachGroupListener();
     if(!fbdb || !id) return;
-    const ref = fbdb.ref('groups/'+id);
-    const callback = function(snap){
-      const val = snap.exists() ? snap.val() : null;
-      onUpdate(val);
-    };
-    ref.on('value', callback);
-    activeGroupListenerRef = ref;
-    activeGroupListenerCallback = callback;
+    activeGroupUnsub = watchGroup(id, onUpdate, { chat: true });
   }
   function normalizeGroup(g){
     ['conditions','games','pendingRequests','members','chat'].forEach(k=>{ if(!g[k]) g[k] = []; });
@@ -1448,9 +2004,138 @@
     return g;
   }
   function replaceGroupContents(localG, fresh){
+    if(localG === fresh) return localG;
+    const noChat = fresh.chat === undefined;
+    const oldChat = localG.chat, oldBaseChat = localG.__base && localG.__base.chat;
     Object.keys(localG).forEach(k=>{ delete localG[k]; });
-    Object.assign(localG, normalizeGroup(fresh));
+    Object.assign(localG, fresh);
+    if(noChat) localG.chat = oldChat || [];
+    normalizeGroup(localG);
+    const b = fresh.__base ? fresh.__base : takeBase(localG);
+    if(noChat) b.chat = oldBaseChat || [];
+    setBase(localG, b);
+    Object.defineProperty(localG, '__legacy', { value: fresh.__legacy || [], writable: true, configurable: true, enumerable: false });
+    return localG;
   }
+
+  // ---- writing: only what changed since the last read/save, in one atomic multi-path update ----
+  function metaOf(o){
+    const m = {};
+    Object.keys(o||{}).forEach(function(k){ if(GROUP_PARTS.indexOf(k) < 0 && k.indexOf('__') !== 0) m[k] = o[k]; });
+    return m;
+  }
+  function buildGroupUpdates(g, base, isOwner){
+    const id = g.id, upd = {};
+    const cur = plain(g);
+    // details
+    const cm = metaOf(cur), bm = metaOf(base);
+    Object.keys(Object.assign({}, cm, bm)).forEach(function(k){
+      if(k === 'id') return;
+      if(!isOwner && k !== 'memberCount') return;
+      if(!deepEq(cm[k], bm[k])) upd['groups/'+id+'/'+k] = (cm[k] === undefined ? null : cm[k]);
+    });
+    const keyed = function(arr, kf){ const o = {}; (arr||[]).forEach(function(it){ o[kf(it)] = it; }); return o; };
+    // chat: new messages only (a member may add their own; the owner may remove)
+    const cc = keyed(cur.chat, function(m){ return m.id; }), bc = keyed(base.chat, function(m){ return m.id; });
+    Object.keys(cc).forEach(function(k){ if(!bc[k] && (isOwner || cc[k].senderId === MY_UID)) upd['groupChat/'+id+'/'+k] = cc[k]; });
+    Object.keys(bc).forEach(function(k){ if(!cc[k] && (isOwner || bc[k].senderId === MY_UID)) upd['groupChat/'+id+'/'+k] = null; });
+    // members: owner manages everyone, a member may only remove themselves
+    const cmem = keyed(cur.members, function(m){ return m.id; }), bmem = keyed(base.members, function(m){ return m.id; });
+    Object.keys(cmem).forEach(function(k){ if(isOwner && !deepEq(cmem[k], bmem[k])) upd['groupMembers/'+id+'/'+k] = cmem[k]; });
+    Object.keys(bmem).forEach(function(k){ if(!cmem[k] && (isOwner || k === MY_UID)) upd['groupMembers/'+id+'/'+k] = null; });
+    // join requests: owner answers them, the requester can withdraw/create their own
+    const creq = keyed(cur.pendingRequests, function(r){ return r.requesterId; }), breq = keyed(base.pendingRequests, function(r){ return r.requesterId; });
+    Object.keys(creq).forEach(function(k){ if(!deepEq(creq[k], breq[k]) && (isOwner || k === MY_UID)) upd['groupRequests/'+id+'/'+k] = creq[k]; });
+    Object.keys(breq).forEach(function(k){ if(!creq[k] && (isOwner || k === MY_UID)) upd['groupRequests/'+id+'/'+k] = null; });
+    // games: owner edits the game itself; everyone only touches their own RSVP
+    const cg = keyed(cur.games, function(x){ return x.id; }), bg = keyed(base.games, function(x){ return x.id; });
+    Object.keys(cg).forEach(function(gid){
+      const cs = gameToStored(cg[gid]);
+      if(!bg[gid]){
+        if(isOwner){ const full = Object.assign({}, cs.fields); if(Object.keys(cs.rsvp).length) full.rsvp = cs.rsvp; upd['groupGames/'+id+'/'+gid] = full; }
+        return;
+      }
+      const bs = gameToStored(bg[gid]);
+      if(isOwner){
+        Object.keys(Object.assign({}, cs.fields, bs.fields)).forEach(function(f){
+          if(!deepEq(cs.fields[f], bs.fields[f])) upd['groupGames/'+id+'/'+gid+'/'+f] = (cs.fields[f] === undefined ? null : cs.fields[f]);
+        });
+      }
+      Object.keys(Object.assign({}, cs.rsvp, bs.rsvp)).forEach(function(u){
+        if(cs.rsvp[u] === bs.rsvp[u]) return;
+        if(!isOwner && u !== MY_UID) return;
+        upd['groupGames/'+id+'/'+gid+'/rsvp/'+u] = (cs.rsvp[u] === undefined ? null : cs.rsvp[u]);
+      });
+    });
+    Object.keys(bg).forEach(function(gid){ if(!cg[gid] && isOwner) upd['groupGames/'+id+'/'+gid] = null; });
+    return upd;
+  }
+  async function saveGroup(g){
+    if(!fbdb || !g || !g.id) return false;
+    if(!isOnline()){ createdToast('אין חיבור לאינטרנט — הפעולה לא נשמרה'); return false; }
+    busyBegin();
+    try{
+      ensureItemIds(g);
+      const isOwner = g.ownerId === MY_UID;
+      let base = g.__base;
+      if(!base){
+        // brand-new group: details first (the rules need them to exist), then the rest
+        if(!isOwner) throw new Error('no base');
+        await withTimeout(fbdb.ref('groups/'+g.id).set(plain(metaOf(g))));
+        base = takeBase(metaOf(g));
+        setBase(g, base);
+      }
+      const upd = buildGroupUpdates(g, base, isOwner);
+      if(isOwner && g.__legacy && g.__legacy.length){
+        g.__legacy.forEach(function(p){ upd['groups/'+g.id+'/'+p] = null; });
+      }
+      if(Object.keys(upd).length){
+        try{ await withTimeout(fbdb.ref().update(upd)); }
+        catch(e){
+          if(e && e.code === 'timeout'){ createdToast('החיבור איטי — השינוי יישמר ברגע שהחיבור יתייצב'); }
+          else throw e;
+        }
+      }
+      setBase(g, takeBase(g));
+      if(g.__legacy) g.__legacy = [];
+      return true;
+    }catch(e){
+      console.error('saveGroup failed', e);
+      createdToast(friendlyError(e, 'השמירה נכשלה'));
+      return false;
+    } finally { busyEnd(); }
+  }
+  async function deleteGroupDoc(id){
+    if(!fbdb) return false;
+    const upd = {};
+    ['groups','groupChat','groupMembers','groupGames','groupRequests'].forEach(function(n){ upd[n+'/'+id] = null; });
+    try{ await withTimeout(fbdb.ref().update(upd)); return true; }
+    catch(e){ console.error('deleteGroup failed', e); createdToast(friendlyError(e, 'מחיקת הקבוצה נכשלה')); return false; }
+  }
+  // background listeners: keep home/calendar/counts live for every group the user owns or belongs to (no chat — that loads only when a chat is open)
+  const bgGroupListeners = {};
+  function ensureBackgroundListeners(){
+    const acc = currentAccount();
+    if(!acc || !fbdb) return;
+    const ids = new Set([].concat((acc.myGroups||[]).map(g=>g.id), acc.ownedGroupIds||[], acc.pendingRealRequests||[]));
+    ids.forEach(id => {
+      if(!id || bgGroupListeners[id]) return;
+      let first = true;
+      const unsub = watchGroup(id, function(fresh){
+        if(first){ first = false; return; }
+        if(!fresh) return;
+        const a = currentAccount();
+        const localG = a && a.myGroups.find(x=>x.id===id);
+        if(localG){ replaceGroupContents(localG, fresh); renderAll(); const c = getCurrentGroupContext(); if(c && c.id === id) updateGroupScreenLive(fresh); }
+        else refreshRealMemberGroups();
+      }, { chat: false });
+      bgGroupListeners[id] = { unsub };
+    });
+  }
+  function stopBackgroundListeners(){
+    Object.keys(bgGroupListeners).forEach(function(id){ try{ bgGroupListeners[id].unsub(); }catch(e){} delete bgGroupListeners[id]; });
+  }
+
   function updateGroupScreenLive(fresh){
     const el = document.getElementById('gp-members');
     if(el) el.textContent = fresh.memberCount || 1;
@@ -1472,42 +2157,6 @@
         renderChat();
       }
     });
-  }
-  // background listeners: keep home/calendar/counts live for every group the user owns or belongs to
-  const bgGroupListeners = {};
-  function ensureBackgroundListeners(){
-    const acc = currentAccount();
-    if(!acc || !fbdb) return;
-    const ids = new Set([].concat((acc.myGroups||[]).map(g=>g.id), acc.ownedGroupIds||[], acc.pendingRealRequests||[]));
-    ids.forEach(id => {
-      if(!id || bgGroupListeners[id]) return;
-      let first = true;
-      const ref = fbdb.ref('groups/'+id);
-      const cb = function(snap){
-        if(first){ first = false; return; }
-        const fresh = snap.exists() ? snap.val() : null;
-        if(!fresh) return;
-        const a = currentAccount();
-        const localG = a && a.myGroups.find(x=>x.id===id);
-        if(localG){ replaceGroupContents(localG, fresh); renderAll(); const c = getCurrentGroupContext(); if(c && c.id === id) updateGroupScreenLive(fresh); }
-        else refreshRealMemberGroups();
-      };
-      ref.on('value', cb);
-      bgGroupListeners[id] = { ref, cb };
-    });
-  }
-  async function saveGroup(g){
-    if(!fbdb) return;
-    try{ await fbdb.ref('groups/'+g.id).set(fbSafe(g)); return true; }
-    catch(e){
-      console.error('saveGroup failed', e);
-      createdToast('⚠️ השמירה נכשלה — בדקו חיבור ונסו שוב');
-      return false;
-    }
-  }
-  async function deleteGroupDoc(id){
-    if(!fbdb) return;
-    try{ await fbdb.ref('groups/'+id).remove(); }catch(e){}
   }
   function newId(prefix){ return prefix+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,8); }
   function newGroupCode(){
@@ -1589,10 +2238,16 @@
     if(!file) return;
     const acc = currentAccount();
     if(!acc) return;
-    resizeImageToDataUrl(file, 200, function(dataUrl){
-      acc.photo = dataUrl;
+    resizeImageToDataUrl(file, 200, async function(dataUrl){
+      updateAvatarInitials(acc.name, dataUrl); // instant preview
+      busyBegin();
+      const url = await uploadAvatar(dataUrl);
+      busyEnd();
+      acc.photo = url;
       updateAvatarInitials(acc.name, acc.photo);
       saveState();
+      propagatePhoto(url);
+      deleteOldAvatars(url);
       createdToast('תמונת הפרופיל עודכנה ✅');
     });
   }
@@ -1601,6 +2256,24 @@
     return state && state.profile ? state.profile : null;
   }
 
+  let pendingLoadUser = null;
+  function showLoadError(authUser, e){
+    pendingLoadUser = authUser || null;
+    hideAppLoadingOverlay();
+    const o = document.getElementById('app-error-overlay');
+    const tx = document.getElementById('app-error-text');
+    if(tx) tx.textContent = !isOnline() ? 'אין חיבור לאינטרנט.\nבדקו את החיבור ונסו שוב.' : 'לא הצלחנו להתחבר לשרת.\nנסו שוב בעוד רגע.';
+    if(tx) tx.style.whiteSpace = 'pre-line';
+    if(o) o.style.display = 'flex';
+  }
+  function retryLoad(){
+    const o = document.getElementById('app-error-overlay');
+    if(o) o.style.display = 'none';
+    const ov = document.getElementById('app-loading-overlay'), tx = document.getElementById('app-loading-text');
+    if(tx) tx.textContent = 'טוען…';
+    if(ov) ov.style.display = 'flex';
+    loadState(pendingLoadUser);
+  }
   async function loadState(authUser){
     if(!firebaseAvailable || !MY_UID){
       state = defaultState();
@@ -1611,11 +2284,14 @@
       return;
     }
     try{
-      const snap = await fbdb.ref('users/'+MY_UID+'/profile').once('value');
+      const snap = await withTimeout(fbdb.ref('users/'+MY_UID+'/profile').once('value'), 12000);
       state = defaultState();
       state.profile = snap.exists() ? snap.val() : null;
     }catch(e){
-      state = defaultState();
+      // never guess: an existing user must not be treated as new just because the network failed
+      console.error('profile load failed', e);
+      showLoadError(authUser, e);
+      return;
     }
     if(state.profile){
       state.profile.id = MY_UID;
@@ -1626,6 +2302,7 @@
       if(!state.profile.pendingRealRequests) state.profile.pendingRealRequests = [];
       if(!state.profile.pendingInvites) state.profile.pendingInvites = [];
       if(!state.profile.joinRequests) state.profile.joinRequests = {};
+      if(!state.profile.blocked) state.profile.blocked = {};
       // pull the latest copy of every group this account owns, fresh from the shared store
       state.profile.myGroups = [];
       await syncOwnedGroups();
@@ -1638,6 +2315,10 @@
       postLoginSetup();
       go('home');
       ensureBackgroundListeners();
+      migrateInlineAvatar();
+      initPush(!!((state.profile.ownedGroupIds||[]).length || (state.profile.pendingRealRequests||[]).length));
+      renderNotifPrefs();
+      if(pendingPushData){ const d = pendingPushData; pendingPushData = null; setTimeout(function(){ routePush(d); }, 400); }
       hideAppLoadingOverlay();
       await processPendingInviteParam();
       refreshHomeInvitesAndRequests();
@@ -1673,6 +2354,8 @@
     if(!p.pendingInvites) p.pendingInvites = [];
     if(!p.joinRequests) p.joinRequests = {};
     if(!p.memberOf) p.memberOf = [];
+    if(!p.blocked) p.blocked = {};
+    if(!p.notif) p.notif = { chat:true, games:true, requests:true };
     if(!p.sports) p.sports = [];
     return p;
   }
@@ -1682,16 +2365,17 @@
     const acc = currentAccount();
     if(!acc || !fbdb || !MY_UID) return;
     const prevIds = (acc.ownedGroupIds||[]).slice();
-    let found = null;
+    let metas = null;
     try{
-      const snap = await fbdb.ref('groups').orderByChild('ownerId').equalTo(MY_UID).once('value');
+      const snap = await withTimeout(fbdb.ref('groups').orderByChild('ownerId').equalTo(MY_UID).once('value'));
       const v = snap.val() || {};
-      found = Object.keys(v).map(k => normalizeGroup(v[k]));
+      metas = Object.keys(v).map(k => ({ id:k, meta:v[k] }));
     }catch(e){ console.warn('owned-groups query failed, falling back to known ids', e); }
-    if(found === null){
-      const loaded = await Promise.all(prevIds.map(id => loadGroup(id)));
-      found = loaded.filter(g => g && g.ownerId === MY_UID).map(normalizeGroup);
+    if(metas === null){
+      const rd = await Promise.all(prevIds.map(async id => { try{ const s = await withTimeout(fbdb.ref('groups/'+id).once('value')); return s.exists() ? { id, meta:s.val() } : null; }catch(e){ return null; } }));
+      metas = rd.filter(x => x && x.meta.ownerId === MY_UID);
     }
+    const found = (await Promise.all(metas.map(m => hydrateGroup(m.id, m.meta, { noChat:true })))).filter(Boolean);
     const order = id => { const i = prevIds.indexOf(id); return i < 0 ? -1 : i; };
     found.sort((a,b) => order(a.id) - order(b.id));
     const oldById = {};
@@ -1703,6 +2387,11 @@
     });
     acc.ownedGroupIds = acc.myGroups.map(g => g.id);
     if(acc.ownedGroupIds.join() !== prevIds.join()) saveState();
+    // groups still stored in the old single-document format get moved to the new structure
+    acc.myGroups.forEach(g => {
+      if(!g.createdAt){ g.createdAt = Date.now(); }
+      if((g.__legacy && g.__legacy.length) || g.__base && !g.__base.createdAt && g.createdAt) saveGroup(g);
+    });
   }
   function attachProfileListener(){
     if(!fbdb || !MY_UID) return;
@@ -1797,7 +2486,7 @@
     // invitations sent to this user via a share link
     const inviteIds = acc.pendingInvites || [];
     if(inviteIds.length){
-      const groups = await Promise.all(inviteIds.map(id => loadGroup(id)));
+      const groups = await Promise.all(inviteIds.map(id => loadGroupSafe(id, {noChat:true})));
       let keep = [];
       let html = '';
       groups.forEach((g, i) => {
@@ -1828,11 +2517,11 @@
     // pending join requests to groups this user manages
     const ownedIds = acc.ownedGroupIds || [];
     if(ownedIds.length){
-      const groups = await Promise.all(ownedIds.map(id => loadGroup(id)));
+      const groups = await Promise.all(ownedIds.map(id => loadGroupSafe(id, {noChat:true})));
       let html = '';
       groups.forEach(g => {
         if(!g || !g.pendingRequests || !g.pendingRequests.length) return;
-        g.pendingRequests.forEach(r => {
+        g.pendingRequests.filter(r => !isBlockedUser(r.requesterId)).forEach(r => {
           html += '<div class="card" style="cursor:default;"><div class="card-body" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">'
             + '<div><div style="font-weight:700; font-size:13.5px;">'+r.name+'</div><div style="font-size:11.5px; color:var(--ink-soft);">מבקש/ת להצטרף ל"'+g.name+'"</div></div>'
             + '<div style="display:flex; gap:6px;">'
@@ -1867,7 +2556,7 @@
       renderAll();
       return;
     }
-    const results = await Promise.all(ids.map(id => loadGroup(id)));
+    const results = await Promise.all(ids.map(id => loadGroupSafe(id, {noChat:true})));
     let stillPending = [];
     let html = '';
     results.forEach((g, i) => {
@@ -2104,7 +2793,7 @@
       id: MY_UID,
       consent: consentRecord || { version: CONSENT_VERSION, at: Date.now() },
       name,
-      photo: onboardData.photo,
+      photo: await uploadAvatar(onboardData.photo),
       gender: onboardData.gender,
       birthdate: onboardData.birthdate,
       city: onboardData.city,
@@ -2367,7 +3056,7 @@
     }
     await saveGroup(g);
     const localG = acc.myGroups.find(x=>x.id===groupId);
-    if(localG) Object.assign(localG, g);
+    if(localG) replaceGroupContents(localG, g);
     saveState();
     renderAll();
     renderGroupPreviewButton();
@@ -2443,6 +3132,16 @@
   let currentJoinedGroupKey = null;
   let currentRealGroupId = null;
   let currentRealMemberGroupId = null;
+  const SEARCH_PAGE = 40;
+  let searchLimit = SEARCH_PAGE, searchMoreRequested = false;
+  // the server does the narrowing (indexed by city / sport / creation time) and only a page at a time is downloaded
+  function groupSearchQuery(sport, city, limit){
+    const base = fbdb.ref('groups');
+    if(city) return base.orderByChild('city').equalTo(city).limitToFirst(limit);
+    if(sport) return base.orderByChild('sport').equalTo(sport).limitToFirst(limit);
+    return base.orderByChild('createdAt').limitToLast(limit);
+  }
+  function searchShowMore(){ searchLimit += SEARCH_PAGE; searchMoreRequested = true; runRealSearch(); }
   async function runRealSearch(){
     go('searchResults');
     const acc = currentAccount();
@@ -2457,27 +3156,37 @@
     const section = document.getElementById('real-results-section');
     const wrap = document.getElementById('real-results-list');
     if(!fbdb){ section.style.display = 'none'; return; }
-    let all = {};
+    section.style.display = 'block';
+    if(!searchMoreRequested) searchLimit = SEARCH_PAGE;
+    searchMoreRequested = false;
+    wrap.innerHTML = '<div style="padding:6px 4px;"><div class="skeleton-line" style="width:70%"></div><div class="skeleton-line" style="width:90%"></div><div class="skeleton-line" style="width:55%"></div></div>';
+    let list = [];
+    let hitLimit = false;
     try{
-      const snap = await fbdb.ref('groups').once('value');
-      all = snap.exists() ? snap.val() : {};
+      const snap = await withTimeout(groupSearchQuery(sport, city, searchLimit).once('value'));
+      snap.forEach(function(c){ const v = sanitizeDeep(c.val()); if(v && v.id) list.push(v); });
+      hitLimit = list.length >= searchLimit;
+      if(!sport && !city) list.reverse(); // newest first
     }catch(e){
       console.error('search fetch failed', e);
-      section.style.display = 'block';
-      wrap.innerHTML = '<p style="text-align:center; font-size:12.5px; color:#DC2626; padding:10px 0;">שגיאה בטעינת קבוצות מהשרת — בדקו את הרשאות הקריאה ב-Firebase</p>';
+      wrap.innerHTML = '<p style="text-align:center; font-size:12.5px; color:#DC2626; padding:10px 0;">'+friendlyError(e, 'שגיאה בטעינת קבוצות')+'</p>'
+        + '<button class="btn btn-ghost" onclick="runRealSearch()">נסו שוב</button>';
       return;
     }
-    const matches = Object.values(all).filter(g => {
+    const matches = list.filter(g => {
       if(!g || g.ownerId === (acc && acc.id)) return false; // skip my own groups here
+      if(isBlockedUser(g.ownerId)) return false;
       if(sport && g.sport !== sport) return false;
       if(age !== 'הכל' && g.ageRange && g.ageRange !== 'הכל' && g.ageRange !== age) return false;
       if(level !== 'הכל' && g.level && g.level !== 'הכל' && g.level !== level) return false;
       if(city && g.city !== city) return false;
       return true;
     });
+    window._searchHitLimit = hitLimit;
     section.style.display = 'block';
     if(!matches.length){
-      wrap.innerHTML = '<p style="text-align:center; font-size:12.5px; color:var(--ink-soft); padding:10px 0;">לא נמצאו קבוצות תואמות לחיפוש — אפשר לנסות סינון רחב יותר, או ליצור קבוצה חדשה משלכם</p>';
+      wrap.innerHTML = '<p style="text-align:center; font-size:12.5px; color:var(--ink-soft); padding:10px 0;">לא נמצאו קבוצות תואמות לחיפוש — אפשר לנסות סינון רחב יותר, או ליצור קבוצה חדשה משלכם</p>'
+        + (window._searchHitLimit ? '<button class="btn btn-ghost" onclick="searchShowMore()">הצג עוד קבוצות</button>' : '');
       return;
     }
     wrap.innerHTML = matches.map(g => {
@@ -2491,7 +3200,7 @@
         + '<div class="card-body"><div class="card-meta">'
         + '<span>📍 '+g.city+'</span><span>👥 '+(g.memberCount||1)+'/'+g.maxMembers+' חברים</span><span>'+(g.ageRange||'הכל')+'</span>'
         + '</div></div></div>';
-    }).join('');
+    }).join('') + (window._searchHitLimit ? '<button class="btn btn-ghost" style="margin-top:6px;" onclick="searchShowMore()">הצג עוד קבוצות</button>' : '');
   }
   async function openRealGroupPreviewFromSearch(id){
     const g = await loadGroup(id);
@@ -2547,6 +3256,7 @@
     if(!acc.pendingRealRequests) acc.pendingRealRequests = [];
     if(!acc.pendingRealRequests.includes(currentRealGroupId)) acc.pendingRealRequests.push(currentRealGroupId);
     saveState();
+    initPush(true);
     createdToast('הבקשה נשלחה למנהל הקבוצה ✅');
     renderGroupPreviewButton();
   }
@@ -2702,19 +3412,21 @@
     const ordered = managers.concat(regular);
     let html = '<div class="card" style="cursor:default;"><div class="card-body" style="display:flex; align-items:center; justify-content:space-between;">'
       + '<div><div style="font-weight:700; font-size:13.5px;">'+(g.ownerName||'המנהל')+(g.ownerId===(acc&&acc.id)?' (את/ה)':'')+'</div><div style="font-size:11.5px; color:var(--ink-soft);">👑 מנהל/ת ראשי/ת</div></div>'
+      + (g.ownerId===(acc&&acc.id) ? '' : '<button class="icon-btn" style="width:32px;height:32px;" title="דיווח / חסימה" onclick="openUserActions({uid:\''+g.ownerId+'\', name:\''+String(g.ownerName||'').replace(/[\'\"]/g,'')+'\', type:\'user\', groupId:\''+g.id+'\', groupName:\''+String(g.name||'').replace(/[\'\"]/g,'')+'\'})">⋯</button>')
       + '</div></div>';
     html += ordered.map(m => {
       const isSelf = m.id === (acc && acc.id);
       let actions = '';
+      const moreBtn = isSelf ? '' : '<button class="icon-btn" style="width:32px;height:32px;" title="דיווח / חסימה" onclick="openUserActions({uid:\''+m.id+'\', name:\''+String(m.name||'').replace(/[\'\"]/g,'')+'\', type:\'user\', groupId:\''+g.id+'\', groupName:\''+String(g.name||'').replace(/[\'\"]/g,'')+'\'})">⋯</button>';
       if(mode === 'owner'){
-        actions = '<div style="display:flex; gap:6px;">'
+        actions = '<div style="display:flex; gap:6px;">'+moreBtn
           + '<button class="icon-btn" style="width:32px;height:32px;" title="מינוי/הסרת ניהול" onclick="confirmToggleManager(\''+g.id+'\',\''+m.id+'\',\''+m.role+'\')">'+(m.role==='manager' ? '🛡️' : '👑')+'</button>'
           + '<button class="icon-btn" style="width:32px;height:32px;" title="הסרת חבר" onclick="confirmRemoveMember(\''+g.id+'\',\''+m.id+'\',\''+m.name.replace(/'/g,'')+'\')">🗑️</button>'
           + '</div>';
       }
       return '<div class="card" style="cursor:default;"><div class="card-body" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">'
         + '<div><div style="font-weight:700; font-size:13.5px;">'+m.name+(isSelf?' (את/ה)':'')+'</div><div style="font-size:11.5px; color:var(--ink-soft);">'+(m.role==='manager' ? '🛡️ מנהל/ת קבוצה' : 'חבר/ה')+'</div></div>'
-        + actions
+        + (mode === 'owner' ? actions : (moreBtn ? '<div>'+moreBtn+'</div>' : ''))
         + '</div></div>';
     }).join('');
     wrap.innerHTML = html;
@@ -2736,6 +3448,7 @@
     const m = (g.members||[]).find(x=>x.id===memberId);
     g.members = (g.members||[]).filter(x=>x.id!==memberId);
     g.memberCount = Math.max(1, (g.memberCount||1) - 1);
+    (g.games||[]).forEach(gm=>{ gm.confirmedIds = (gm.confirmedIds||[]).filter(x=>x!==memberId); gm.declinedIds = (gm.declinedIds||[]).filter(x=>x!==memberId); });
     await saveGroup(g);
     saveState();
     const membersEl = document.getElementById('gp-members');
@@ -2750,6 +3463,7 @@
       + '</div>';
   }
   async function renderGroupPreviewButton(){
+    updateReportBtn();
     const wrap = document.getElementById('gp-action');
     if(!wrap) return;
     const acc = currentAccount();
@@ -2786,7 +3500,7 @@
     if(currentOwnedGroupId){
       const g = acc && acc.myGroups.find(x=>x.id===currentOwnedGroupId);
       renderGpGamesSection(g, 'owner');
-      const reqs = (g && g.pendingRequests) || [];
+      const reqs = ((g && g.pendingRequests) || []).filter(r => !isBlockedUser(r.requesterId));
       const reqsSection = document.getElementById('gp-requests-section');
       const reqsList = document.getElementById('gp-requests-list');
       if(reqs.length){
@@ -2941,6 +3655,7 @@
       sport, name, region, city,
       maxMembers: max,
       memberCount: 1,
+      createdAt: Date.now(),
       ageRange, level,
       conditions, desc,
       games: [],
@@ -2953,6 +3668,7 @@
     if(!acc.ownedGroupIds) acc.ownedGroupIds = [];
     acc.ownedGroupIds.unshift(group.id);
     saveState();
+    initPush(true);
     resetCreateGroupForm();
     createdToast('הקבוצה נוצרה 🎉 — קוד ההזמנה: '+group.id);
     renderAll();
@@ -2981,7 +3697,7 @@
     // pull the latest shared copy so requests/messages from other devices show up
     const fresh = await loadGroup(id);
     if(fresh){
-      Object.assign(g, fresh);
+      replaceGroupContents(g, fresh);
     }
     currentOwnedGroupId = id;
     currentPreviewKey = null;
@@ -3047,6 +3763,7 @@
     if(g){
       g.members = (g.members||[]).filter(m=>m.id!==acc.id);
       g.memberCount = Math.max(1, (g.memberCount||1) - 1);
+      (g.games||[]).forEach(gm=>{ gm.confirmedIds = (gm.confirmedIds||[]).filter(x=>x!==acc.id); gm.declinedIds = (gm.declinedIds||[]).filter(x=>x!==acc.id); });
       await saveGroup(g);
     }
     acc.pendingRealRequests = (acc.pendingRealRequests||[]).filter(id=>id!==groupId);
@@ -3384,10 +4101,12 @@
     const box = document.getElementById('gp-invite-box');
     const input = document.getElementById('gp-invite-link');
     box.style.display = 'block';
-    const link = location.origin + location.pathname + '?join=' + id;
+    const link = inviteLinkFor(id);
     input.value = link;
     const sportPhrase = g.sport ? ('לקבוצת ' + g.sport + ' שלנו') : 'לקבוצה שלנו';
     const message = 'היי! בואו תצטרפו ' + sportPhrase + ' — "' + g.name + '" 🙌⚽\n' + link;
+    const ShareP = IS_NATIVE ? nativePlugin('Share') : null;
+    if(ShareP){ try{ await ShareP.share({ title: 'הזמנה ל-' + g.name, text: message, dialogTitle: 'הזמנת חברים' }); }catch(e){} return; }
     const waUrl = 'https://wa.me/?text=' + encodeURIComponent(message);
     window.open(waUrl, '_blank');
   }
@@ -3447,7 +4166,7 @@
         title = "צ'אט · "+g.name; subtitle = (g.memberCount||1)+' חברים';
         if(type === 'custom'){
           const localG = acc && acc.myGroups.find(x=>x.id===idOrKey);
-          if(localG) Object.assign(localG, g);
+          if(localG) replaceGroupContents(localG, g);
         }
       }
     } else if(type === 'joined'){
@@ -3468,7 +4187,8 @@
     const wrap = document.getElementById('chat-messages');
     if(!wrap) return;
     const acc = currentAccount();
-    const chat = getChatArray();
+    const allChat = getChatArray();
+    const chat = allChat.filter(m => !(m.senderId && isBlockedUser(m.senderId)));
     if(!chat.length){
       wrap.innerHTML = '<p style="text-align:center; font-size:12.5px; color:var(--ink-soft); padding:20px;">אין עדיין הודעות בצ׳אט הקבוצתי — כתבו הודעה ראשונה 👋</p>';
       return;
@@ -3488,7 +4208,8 @@
       const avatar = '<div style="width:34px; height:34px; border-radius:50%; background:'+avatarColor+'; color:#fff; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">'+avatarInner+'</div>';
       const bubble = '<div class="msg-bubble"></div>';
       if(isMe) return '<div class="msg-row me">'+avatar+bubble+'</div>';
-      return '<div class="msg-row">'+avatar+'<div>'+(senderLabel ? '<div class="msg-sender">'+senderLabel+'</div>' : '')+bubble+'</div></div>';
+      const tap = (m.senderId ? ' onclick="openMessageActions('+allChat.indexOf(m)+')" style="cursor:pointer;"' : '');
+      return '<div class="msg-row"'+tap+'>'+avatar+'<div>'+(senderLabel ? '<div class="msg-sender">'+senderLabel+'</div>' : '')+bubble+'</div></div>';
     }).join('');
     const bubbles = wrap.querySelectorAll('.msg-bubble');
     chat.forEach((m,i)=>{ bubbles[i].textContent = m.text; });
@@ -3519,13 +4240,13 @@
     if(!wrap || !list || !fbdb) return;
     const mySports = (acc && acc.sports) || [];
     if(!mySports.length){ wrap.style.display = 'none'; return; }
-    let all = {};
+    let found = [];
     try{
-      const snap = await fbdb.ref('groups').once('value');
-      all = snap.exists() ? snap.val() : {};
+      const snaps = await Promise.all(mySports.slice(0,3).map(s => withTimeout(fbdb.ref('groups').orderByChild('sport').equalTo(s).limitToFirst(12).once('value'))));
+      snaps.forEach(sn => sn.forEach(c => { const v = sanitizeDeep(c.val()); if(v && v.id) found.push(v); }));
     }catch(e){ wrap.style.display = 'none'; return; }
-    const myIds = new Set([acc.id, ...(acc.pendingRealRequests||[])]);
-    const matches = Object.values(all).filter(g => g && mySports.includes(g.sport) && g.ownerId !== acc.id && !(g.members||[]).some(m=>m.id===acc.id)).slice(0, 6);
+    const mine = new Set([].concat(acc.pendingRealRequests||[], acc.ownedGroupIds||[], acc.memberGroupIds||[]));
+    const matches = found.filter(g => !mine.has(g.id) && g.ownerId !== acc.id && !isBlockedUser(g.ownerId) && (g.memberCount||1) < (g.maxMembers||999)).slice(0, 6);
     if(!matches.length){ wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
     list.innerHTML = matches.map(g => {
